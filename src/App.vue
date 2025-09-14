@@ -3,9 +3,13 @@ import { onMounted } from 'vue'
 import TheHeader from './components/TheHeader.vue'
 import SettingsModal from './components/SettingsModal.vue'
 import ToastContainer from './components/ToastContainer.vue'
+import { useTheme } from '@/composables/useTheme'
 import { initAutomationRunner } from '@/composables/useAutomationRunner'
 
+const { initTheme } = useTheme()
+
 onMounted(() => {
+  initTheme()
   initAutomationRunner()
   import('bootstrap/dist/js/bootstrap.min.js')
 })

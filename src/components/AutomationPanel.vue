@@ -107,7 +107,7 @@ function getIconBgClass(featureId) {
   return 'icon-bg-danger' // Red for others like 'out'
 }
 function togglePanel() {
-  isCollapsed.value = !isCollapsed
+  isCollapsed.value = !isCollapsed.value
 }
 
 function toggleSettings(event, settingsId) {
@@ -232,16 +232,9 @@ onMounted(() => {
   position: static;
   right: 0;
   top: 0;
-  width: 340px; /* Or your desired width */
-  height: calc(100% - 20px); /* Thêm khoảng cách với đáy */
-  margin: 10px 0; /* Thêm margin top và bottom */
-  background: rgba(30, 35, 46, 0.7); /* Glassmorphism background */
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow:
-    -5px -5px 10px rgba(50, 58, 77, 0.5),
-    5px 5px 10px rgba(18, 21, 28, 0.5);
+  width: 340px;
+  height: calc(100% - 20px);
+  margin: 10px 0;
   display: flex; /* This will be overridden by flex-shrink */
   flex-direction: column;
   transition: transform 0.3s ease;
@@ -257,11 +250,9 @@ onMounted(() => {
 /* Fold Button */
 .fold-button {
   position: relative;
-  top: 336px;
-  /* width: 0px; */
+  top: 50%;
+  transform: translateY(-50%);
   height: 40px;
-  background: #2f333d;
-  border: 1px solid #444857;
   border-radius: 6px 0 0 6px;
   border-right: none;
   display: flex;
@@ -269,20 +260,13 @@ onMounted(() => {
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  color: white;
   z-index: 1001;
   flex-shrink: 0;
 }
 
-.fold-button:hover {
-  background: #3c414b;
-}
-
 /* Panel Header */
 .panel-header {
-  padding: 10px;
-  background: rgba(47, 51, 61, 0.5); /* Nền header mờ hơn */
-  color: white;
+  padding: 15px;
   text-align: center;
 }
 
@@ -298,37 +282,12 @@ onMounted(() => {
   padding: 15px;
 }
 
-.cards-container::-webkit-scrollbar {
-  width: 6px;
-}
-
-.cards-container::-webkit-scrollbar-track {
-  background: #2f333d;
-  border-radius: 3px;
-}
-
-.cards-container::-webkit-scrollbar-thumb {
-  background: #495057;
-  border-radius: 3px;
-}
-
-.cards-container::-webkit-scrollbar-thumb:hover {
-  background: #6c757d;
-}
-
 /* Feature Cards */
 .feature-card {
-  background: rgba(47, 51, 61, 0.6); /* Nền mờ cho card */
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
   margin-bottom: 15px;
   transition: all 0.3s ease;
   overflow: hidden; /* Đảm bảo bo tròn góc được áp dụng cho card-header bên trong */
-}
-
-.feature-card:hover {
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  transform: translateY(-3px);
 }
 
 .card-header {
@@ -345,7 +304,6 @@ onMounted(() => {
   gap: 10px;
   margin: 0;
   font-weight: 600;
-  color: #a0aec0; /* Giống với màu chữ của table header */
 }
 
 /* Card Icons */
@@ -380,7 +338,6 @@ onMounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #ccc;
   transition: 0.4s;
   border-radius: 26px;
 }
@@ -396,11 +353,6 @@ onMounted(() => {
   transition: 0.4s;
   border-radius: 50%;
 }
-
-input:checked + .slider {
-  background-color: #667eea;
-}
-
 input:checked + .slider:before {
   transform: translateX(24px);
 }
@@ -408,8 +360,6 @@ input:checked + .slider:before {
 /* Card Settings */
 .card-settings {
   padding: 20px;
-  background: transparent; /* Nền trong suốt để thấy background của panel */
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
   display: none;
 }
 
@@ -439,25 +389,15 @@ input:checked + .slider:before {
 .floating-input input {
   width: 100%;
   padding: 12px 15px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 8px;
   font-size: 14px;
   transition: all 0.3s ease;
-  background: rgba(47, 51, 61, 0.7);
-  color: #dee2e6;
-}
-
-.floating-input input:focus {
-  outline: none;
-  border-color: #667eea;
-  background: #3c414b;
 }
 
 .floating-input label {
   position: absolute;
   left: 15px;
   top: 12px;
-  color: #6c757d;
   font-size: 14px;
   transition: all 0.3s ease;
   pointer-events: none;
@@ -468,16 +408,12 @@ input:checked + .slider:before {
   top: -8px;
   left: 10px;
   font-size: 12px;
-  color: #667eea;
-  background: #272b34; /* Match panel background */
   padding: 0 5px;
 }
 
 /* Control Panel */
 .control-panel {
   padding: 20px;
-  background: rgba(47, 51, 61, 0.5); /* Nền mờ */
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .control-buttons {
@@ -526,5 +462,137 @@ input:checked + .slider:before {
 .control-inputs {
   display: flex;
   gap: 15px;
+}
+
+/* --- Dark Theme Styles --- */
+[data-bs-theme='dark'] #adPanel {
+  background: rgba(30, 35, 46, 0.7);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: -5px -5px 10px rgba(50, 58, 77, 0.5), 5px 5px 10px rgba(18, 21, 28, 0.5);
+}
+
+[data-bs-theme='dark'] .fold-button {
+  background: #2f333d;
+  border: 1px solid #444857;
+  color: white;
+}
+
+[data-bs-theme='dark'] .fold-button:hover {
+  background: #3c414b;
+}
+
+[data-bs-theme='dark'] .panel-header {
+  background: rgba(47, 51, 61, 0.5);
+  color: white;
+}
+
+[data-bs-theme='dark'] .feature-card {
+  background: rgba(47, 51, 61, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-bs-theme='dark'] .feature-card:hover {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transform: translateY(-3px);
+}
+
+[data-bs-theme='dark'] .card-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-bs-theme='dark'] .card-title {
+  color: #a0aec0;
+}
+
+[data-bs-theme='dark'] .slider {
+  background-color: #495057;
+}
+
+[data-bs-theme='dark'] input:checked + .slider {
+  background-color: #667eea;
+}
+
+[data-bs-theme='dark'] .card-settings {
+  background: transparent;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-bs-theme='dark'] .floating-input input {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(47, 51, 61, 0.7);
+  color: #dee2e6;
+}
+
+[data-bs-theme='dark'] .floating-input input:focus {
+  outline: none;
+  border-color: #667eea;
+  background: #3c414b;
+}
+
+[data-bs-theme='dark'] .floating-input label {
+  color: #6c757d;
+}
+
+[data-bs-theme='dark'] .floating-input input:focus + label,
+[data-bs-theme='dark'] .floating-input input:not(:placeholder-shown) + label {
+  color: #667eea;
+  background: #272b34;
+}
+
+[data-bs-theme='dark'] .control-panel {
+  background: rgba(47, 51, 61, 0.5);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* --- Light Theme Styles --- */
+[data-bs-theme='light'] #adPanel {
+  background-color: #ffffff;
+  border: 1px solid var(--bs-border-color);
+  box-shadow: -2px 0 15px rgba(0, 0, 0, 0.05);
+}
+
+[data-bs-theme='light'] .fold-button {
+  background: var(--bs-tertiary-bg);
+  border: 1px solid var(--bs-border-color);
+  border-right: none;
+  color: var(--bs-body-color);
+}
+
+[data-bs-theme='light'] .panel-header {
+  background-color: var(--bs-tertiary-bg);
+  border-bottom: 1px solid var(--bs-border-color);
+}
+
+[data-bs-theme='light'] .feature-card {
+  background-color: var(--bs-tertiary-bg);
+  border: 1px solid var(--bs-border-color-translucent);
+}
+
+[data-bs-theme='light'] .card-header {
+  border-bottom: 1px solid var(--bs-border-color-translucent);
+}
+
+[data-bs-theme='light'] .card-settings {
+  border-top: 1px solid var(--bs-border-color-translucent);
+}
+
+[data-bs-theme='light'] .floating-input input:focus + label,
+[data-bs-theme='light'] .floating-input input:not(:placeholder-shown) + label {
+  background: var(--bs-tertiary-bg);
+}
+
+[data-bs-theme='light'] .control-panel {
+  background-color: var(--bs-tertiary-bg);
+  border-top: 1px solid var(--bs-border-color);
+}
+
+[data-bs-theme='light'] .slider {
+  background-color: #ccc;
+}
+
+[data-bs-theme='light'] input:checked + .slider {
+  background-color: var(--bs-primary);
 }
 </style>

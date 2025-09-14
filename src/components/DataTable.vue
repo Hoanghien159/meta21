@@ -12,7 +12,7 @@
 
     <!-- Table Container -->
     <div class="table-container custom-scrollbar flex-grow-1">
-      <table class="table table-dark table-hover mb-0">
+      <table class="table table-hover mb-0">
         <thead class="table-header">
           <tr>
             <th v-if="selectable" class="text-center" style="width: 50px">
@@ -140,7 +140,7 @@
         <div class="d-flex align-items-center gap-2 text-sm footer-text">
           <span>Số mục/trang:</span>
           <select
-            class="form-select form-select-sm w-auto bg-dark text-white border-secondary"
+          class="form-select form-select-sm w-auto"
             :value="itemsPerPage"
             @change="$emit('update:itemsPerPage', +$event.target.value)"
           >
@@ -161,17 +161,19 @@
           &laquo;
         </button>
 
-        <template v-for="page in pagination" :key="page">
-          <button
-            v-if="typeof page === 'number'"
-            class="pagination-button"
-            :class="{ active: page === currentPage }"
-            @click="$emit('update:currentPage', page)"
-          >
-            {{ page }}
-          </button>
-          <span v-else class="pagination-button disabled">...</span>
-        </template>
+        <div class="d-flex align-items-center gap-1 footer-text text-sm">
+          <span>Trang</span>
+          <input
+            type="number"
+            class="form-control form-control-sm page-input"
+            :value="currentPage"
+            @keyup.enter="goToPage($event.target.value)"
+            @blur="goToPage($event.target.value)"
+            min="1"
+            :max="totalPages"
+          />
+          <span>/ {{ totalPages }}</span>
+        </div>
 
         <button
           class="pagination-button"
@@ -181,8 +183,6 @@
         >
           &raquo;
         </button>
-
-        <span class="text-sm footer-text">Trang {{ currentPage }} / {{ totalPages }}</span>
       </div>
     </div>
   </div>
@@ -269,36 +269,6 @@ const contextMenu = ref({
   y: 0,
 })
 
-const pagination = computed(() => {
-  const total = props.totalPages
-  const current = props.currentPage
-  // Nếu không có trang nào thì trả về mảng rỗng
-  if (total <= 0) {
-    return []
-  }
-
-  if (total <= 10) {
-    // Hiển thị tất cả nếu có 10 trang trở xuống
-    return Array.from({ length: total }, (_, i) => i + 1)
-  }
-
-  const pages = []
-
-  // Luôn hiển thị trang đầu tiên
-  pages.push(1)
-
-  if (current > 3) pages.push('...')
-  if (current > 2) pages.push(current - 1)
-  if (current > 1 && current < total) pages.push(current)
-  if (current < total - 1) pages.push(current + 1)
-  if (current < total - 2) pages.push('...')
-
-  // Luôn hiển thị trang cuối cùng
-  pages.push(total)
-
-  return pages
-})
-
 function getStatusClass(status) {
   // Trạng thái chung
   if (status === 'Hoạt động') return 'status-active'
@@ -369,6 +339,20 @@ function showContextMenu(event) {
   // Lắng nghe sự kiện click bên ngoài để đóng menu và xóa bôi đen
   document.addEventListener('click', handleClickOutside, { once: true })
 }
+const emit = defineEmits([
+  'sort',
+  'update:currentPage',
+  'update:itemsPerPage',
+  'update:columnWidths',
+  'update:statusFilter',
+])
+function goToPage(page) {
+  const pageNumber = parseInt(page, 10)
+  if (!isNaN(pageNumber) && pageNumber >= 1 && pageNumber <= props.totalPages) {
+    emit('update:currentPage', pageNumber)
+  }
+  // Nếu người dùng nhập số trang không hợp lệ, có thể reset lại giá trị của input về trang hiện tại
+}
 
 function hideContextMenu() {
   contextMenu.value.visible = false
@@ -402,13 +386,7 @@ function updateSelection(itemId, mode) {
   setSelectedIds(Array.from(newSelected))
 }
 
-const emit = defineEmits([
-  'sort',
-  'update:currentPage',
-  'update:itemsPerPage',
-  'update:columnWidths',
-  'update:statusFilter',
-])
+
 
 const areAllSelected = computed(() => {
   if (!props.items.length || !sharedSelectedIds.value.length) return false
@@ -491,8 +469,8 @@ onBeforeUnmount(() => {
 .context-menu {
   position: fixed;
   z-index: 1000;
-  background-color: #3c414b;
-  border: 1px solid #495057;
+  background-color: var(--bs-dropdown-bg);
+  border: 1px solid var(--bs-dropdown-border-color);
   border-radius: 8px;
   padding: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
@@ -501,14 +479,14 @@ onBeforeUnmount(() => {
 
 .context-menu-item {
   padding: 8px 12px;
-  color: #dee2e6;
+  color: var(--bs-dropdown-link-color);
   cursor: pointer;
   border-radius: 4px;
   transition: background-color 0.2s;
 }
 
 .context-menu-item:hover {
-  background-color: #495057;
+  background-color: var(--bs-dropdown-link-hover-bg);
 }
 
 /* Ensure table layout is consistent */
@@ -541,12 +519,6 @@ onBeforeUnmount(() => {
 .pagination-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  background-color: #343a40;
-}
-
-.form-check-input {
-  background-color: #495057;
-  border-color: #6c757d;
 }
 
 .table th:hover .resizer {
@@ -568,6 +540,12 @@ onBeforeUnmount(() => {
 
 .sort-icon.asc {
   transform: rotate(180deg);
+}
+
+.page-input {
+  width: 60px;
+  text-align: center;
+  -moz-appearance: textfield; /* Firefox */
 }
 
 /* Ensure text-start is applied correctly */

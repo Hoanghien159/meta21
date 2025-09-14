@@ -134,7 +134,7 @@ const adAccounts = ref([
     statusClass: 'status-leave',
     automationStatus: '',
   },
-  ...Array.from({ length: 35 }, (_, i) => ({
+  ...Array.from({ length: 50 }, (_, i) => ({
     id: `act_123456789${i}`,
     name: `Tài khoản Test ${i + 1}`,
     status: i % 3 === 0 ? 'Hoạt động' : i % 3 === 1 ? 'Tạm dừng' : 'Đang xem xét',

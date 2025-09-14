@@ -411,6 +411,15 @@ body {
   box-shadow: -8px -8px 16px rgba(50, 58, 77, 0.6), 8px 8px 16px rgba(18, 21, 28, 0.6),
     inset 0 0 15px rgba(96, 165, 250, 0.1), 0 0 25px rgba(96, 165, 250, 0.2);
 }
+[data-bs-theme="light"] {
+  --bs-body-bg: #f8f9fa;
+  --bs-body-color: #212529;
+}
+
+[data-bs-theme="light"] .metric-card {
+  background: #ffffff;
+  border: 1px solid #dee2e6;
+}
 
 [data-bs-theme="dark"] .card {
   --bs-card-color: #a0aec0;
