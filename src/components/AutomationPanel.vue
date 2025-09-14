@@ -189,20 +189,22 @@ function startAutomation() {
 }
 
 function stopAutomation() {
-  const startBtn = document.getElementById('startBtn')
-  const stopBtn = document.getElementById('stopBtn')
-
-  startBtn.style.display = 'flex'
-  stopBtn.style.display = 'none'
-
-  console.log('Automation stopped')
-  addToast('Đã dừng quá trình tự động hóa.', 'info')
+  // Chỉ phát tín hiệu dừng, không thay đổi UI ở đây.
+  // UI sẽ được cập nhật khi nhận được sự kiện 'end'.
+  emitAutomation('stop')
+  console.log('Stop signal sent to automation runner.')
+  addToast('Đã gửi yêu cầu dừng. Hệ thống sẽ dừng sau khi hoàn tất các tác vụ đang chạy.', 'info')
 }
 
-const unsubscribeEnd = onAutomation('end', () => {
-  // Tự động gọi hàm stopAutomation khi nhận được tín hiệu kết thúc
-  stopAutomation()
-})
+const handleAutomationEnd = () => {
+  const startBtn = document.getElementById('startBtn')
+  const stopBtn = document.getElementById('stopBtn')
+  startBtn.style.display = 'flex'
+  stopBtn.style.display = 'none'
+  console.log('Automation process has fully ended.')
+}
+
+const unsubscribeEnd = onAutomation('end', handleAutomationEnd)
 
 onUnmounted(() => {
   unsubscribeEnd() // Hủy đăng ký lắng nghe sự kiện khi component bị hủy

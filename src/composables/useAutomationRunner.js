@@ -4,6 +4,7 @@ import { useToast } from '@/composables/useToast'
 
 // Di chuyển các biến này ra ngoài để chúng trở thành state của module
 const taskHandlers = ref({})
+let isStopping = false
 
 /**
  * Khởi tạo listener cho các tác vụ tự động hóa.
@@ -15,6 +16,7 @@ export function initAutomationRunner() {
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
   onAutomation('start', async (payload) => {
+    isStopping = false // Reset trạng thái dừng khi bắt đầu
     emitAutomation('running', true)
     const { selectedIds, features, threads, delay } = payload
 
@@ -30,6 +32,10 @@ export function initAutomationRunner() {
 
         const runTask = async () => {
           while (queue.length > 0) {
+            if (isStopping) {
+              console.log('Stopping signal received, no new tasks will be started.')
+              break
+            }
             const itemId = queue.shift()
             if (itemId) {
               try {
@@ -55,6 +61,11 @@ export function initAutomationRunner() {
     console.log('Hoàn tất tất cả các tác vụ.')
     emitAutomation('running', false)
     emitAutomation('end')
+  })
+
+  onAutomation('stop', () => {
+    console.log('Received stop signal. Finishing current tasks...')
+    isStopping = true
   })
 }
 

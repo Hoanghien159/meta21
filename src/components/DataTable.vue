@@ -470,6 +470,8 @@ onBeforeUnmount(() => {
   position: fixed;
   z-index: 1000;
   background-color: var(--bs-dropdown-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--bs-dropdown-border-color);
   border-radius: 8px;
   padding: 8px;

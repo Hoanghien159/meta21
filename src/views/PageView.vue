@@ -5,18 +5,7 @@
       <DataTable :columns="columns" :items="paginatedAccounts" :total-items="filteredAccounts.length" :sort-key="sortKey"
         :sort-order="sortOrder" @sort="sortBy" selectable v-model:current-page="currentPage"
         v-model:items-per-page="itemsPerPage" :total-pages="totalPages" :column-widths="columnWidths"
-        @update:column-widths="columnWidths = $event" :status-counts="statusCounts" v-model:status-filter="statusFilter"
-        @click.stop>
-        <template #bulk-actions>
-          <button
-            v-if="sharedSelectedIds.length > 0"
-            class="btn btn-danger btn-sm"
-            @click="deleteSelected"
-          >
-            <i class="ri-delete-bin-line me-1"></i> Xóa ({{ sharedSelectedIds.length }})
-          </button>
-        </template>
-
+        @update:column-widths="columnWidths = $event" :status-counts="statusCounts" v-model:status-filter="statusFilter" @click.stop>
         <template #cell(stt)="{ item }"> {{ item.stt }} </template>
         <template #cell(name)="{ item }">
           <div class="d-flex align-items-center">
@@ -232,13 +221,6 @@ function sortBy(key) {
   } else {
     sortKey.value = key
     sortOrder.value = 'desc'
-  }
-}
-
-function deleteSelected() {
-  if (confirm(`Bạn có chắc muốn xóa ${sharedSelectedIds.value.length} tài khoản đã chọn?`)) {
-    adAccounts.value = adAccounts.value.filter((acc) => !sharedSelectedIds.value.includes(acc.id))
-    setSelectedIds([])
   }
 }
 
