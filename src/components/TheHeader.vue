@@ -48,12 +48,22 @@
       </div>
 
       <!-- Settings Button -->
-      <button
-        class="btn btn-secondary fw-bold shadow-sm settings-btn"
-        data-bs-toggle="modal" data-bs-target="#settingModal"
-      >
-        <i class="ri-settings-3-line me-1"></i> Cài đặt
-      </button>
+
+ <div class="d-flex align-items-center gap-2">
+        <button
+          class="btn btn-secondary fw-bold shadow-sm settings-btn"
+          @click="reloadPage"
+        >
+          <i class="ri-refresh-line me-1"></i> Tải lại
+        </button>
+        <button
+          class="btn btn-secondary fw-bold shadow-sm settings-btn"
+          data-bs-toggle="modal"
+          data-bs-target="#settingModal"
+        >
+          <i class="ri-settings-3-line me-1"></i> Cài đặt
+        </button>
+      </div>
 
       <!-- User Info -->
       <div
@@ -75,7 +85,9 @@
 </template>
 
 <script setup>
-// Logic cho header (nếu có)
+import { usePageReloader } from '@/composables/usePageReloader'
+
+const { reloadPage } = usePageReloader()
 </script>
 
 <style scoped>

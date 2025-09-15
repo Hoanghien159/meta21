@@ -1,6 +1,7 @@
 <template>
   <DataViewLayout>
     <template #datatable>
+      <ReloadModals modal-type="ads" />
       <!-- prettier-ignore -->
       <DataTable :columns="columns" :items="paginatedAccounts" :total-items="filteredAccounts.length" :sort-key="sortKey"
         :sort-order="sortOrder" @sort="sortBy" selectable v-model:current-page="currentPage"
@@ -39,11 +40,12 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 import DataTable from '@/components/DataTable.vue'
 import AutomationPanel from '@/components/AutomationPanel.vue'
 import DataViewLayout from '@/components/DataViewLayout.vue'
 import { useSelection } from '@/composables/useSelection'
+import ReloadModals from '@/components/ReloadModals.vue'
 import { useAutomationRunner } from '@/composables/useAutomationRunner'
 import { useToast } from '@/composables/useToast'
 
