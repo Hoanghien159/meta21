@@ -30,25 +30,29 @@
 
             <div class="bg-blue-50 dark:bg-gray-900/50 rounded-lg p-4 space-y-4">
               <!-- Tải toàn bộ -->
-              <div class="bg-white dark:bg-gray-700/50 rounded-lg p-3 border border-blue-200 dark:border-blue-800 cursor-pointer">
-                <label class="flex items-start space-x-3 cursor-pointer">
+              <div class="bg-white dark:bg-gray-700/50 rounded-lg p-3 border border-blue-200 dark:border-blue-800">
+                <label class="flex items-center space-x-3 cursor-pointer">
                   <input type="radio" name="loadMethod" value="all" v-model="loadMethod" class="w-4 h-4 text-blue-600 focus:ring-blue-500" />
-                  <div class="flex flex-col -mt-0.5">
-                    <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Tải toàn bộ</span>
-                    <span class="text-xs text-gray-500 dark:text-gray-400">Tải tất cả dữ liệu có sẵn</span>
-                  </div>
+                  <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Tải toàn bộ</span>
                 </label>
+                <div class="pl-7 mt-1">
+                  <p class="relative pl-5 text-xs text-gray-500 dark:text-gray-400">
+                    <span class="absolute left-0 top-1.5 w-3 h-px bg-gray-300 dark:bg-gray-600"></span><span class="absolute left-0 -top-0.5 w-px h-3 bg-gray-300 dark:bg-gray-600"></span>Tải tất cả dữ liệu có sẵn
+                  </p>
+                </div>
               </div>
 
               <!-- Tải theo ID -->
-              <div class="bg-white dark:bg-gray-700/50 rounded-lg p-3 border border-gray-200 dark:border-gray-700 cursor-pointer">
-                <label class="flex items-start space-x-3 cursor-pointer">
+              <div class="bg-white dark:bg-gray-700/50 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+                <label class="flex items-center space-x-3 cursor-pointer">
                   <input type="radio" name="loadMethod" value="byId" v-model="loadMethod" class="w-4 h-4 text-blue-600 focus:ring-blue-500" />
-                  <div class="flex flex-col -mt-0.5">
-                    <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Tải theo ID</span>
-                    <span class="text-xs text-gray-500 dark:text-gray-400">Nhập danh sách ID cụ thể</span>
-                  </div>
+                  <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Tải theo ID</span>
                 </label>
+                <div class="pl-7 mt-1">
+                  <p class="relative pl-5 text-xs text-gray-500 dark:text-gray-400">
+                    <span class="absolute left-0 top-1.5 w-3 h-px bg-gray-300 dark:bg-gray-600"></span><span class="absolute left-0 -top-0.5 w-px h-3 bg-gray-300 dark:bg-gray-600"></span>Nhập danh sách ID cụ thể
+                  </p>
+                </div>
                 <div v-if="loadMethod === 'byId'" id="idListContainer" class="mt-3">
                   <textarea
                     id="idList"
@@ -59,14 +63,15 @@
               </div>
 
               <!-- Tải theo ID BM -->
-              <div class="bg-white dark:bg-gray-700/50 rounded-lg p-3 border border-gray-200 dark:border-gray-700 cursor-pointer">
-                <label class="flex items-start space-x-3 cursor-pointer">
+              <div class="bg-white dark:bg-gray-700/50 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+                <label class="flex items-center space-x-3 cursor-pointer">
                   <input type="radio" name="loadMethod" value="byBmId" v-model="loadMethod" class="w-4 h-4 text-blue-600 focus:ring-blue-500" />
-                  <div class="flex flex-col -mt-0.5">
-                    <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Tải theo danh sách ID BM</span>
-                    <span class="text-xs text-gray-500 dark:text-gray-400">Nhập ID Business Manager</span>
-                  </div>
+                  <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Tải theo danh sách ID BM</span>
                 </label>
+                <div class="pl-7 mt-1">
+                  <p class="relative pl-5 text-xs text-gray-500 dark:text-gray-400">
+                    <span class="absolute left-0 top-1.5 w-3 h-px bg-gray-300 dark:bg-gray-600"></span><span class="absolute left-0 -top-0.5 w-px h-3 bg-gray-300 dark:bg-gray-600"></span>Nhập ID Business Manager
+                  </p>
                 <div v-if="loadMethod === 'byBmId'" id="bmIdListContainer" class="mt-3">
                   <textarea
                     id="bmIdList"
@@ -74,17 +79,20 @@
                     class="w-full h-20 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:placeholder-gray-400"
                   ></textarea>
                 </div>
+                </div>
               </div>
 
               <!-- Tải theo BM -->
-              <div class="bg-white dark:bg-gray-700/50 rounded-lg p-3 border border-gray-200 dark:border-gray-700 cursor-pointer">
-                <label class="flex items-start space-x-3 cursor-pointer">
+              <div class="bg-white dark:bg-gray-700/50 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+                <label class="flex items-center space-x-3 cursor-pointer">
                   <input type="radio" name="loadMethod" value="byBm" v-model="loadMethod" class="w-4 h-4 text-blue-600 focus:ring-blue-500" />
-                  <div class="flex flex-col -mt-0.5">
-                    <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Tải theo BM</span>
-                    <span class="text-xs text-gray-500 dark:text-gray-400">Chọn từ danh sách Business Manager</span>
-                  </div>
+                  <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Tải theo BM</span>
                 </label>
+                <div class="pl-7 mt-1">
+                  <p class="relative pl-5 text-xs text-gray-500 dark:text-gray-400">
+                    <span class="absolute left-0 top-1.5 w-3 h-px bg-gray-300 dark:bg-gray-600"></span><span class="absolute left-0 -top-0.5 w-px h-3 bg-gray-300 dark:bg-gray-600"></span>Chọn từ danh sách Business Manager
+                  </p>
+                </div>
                 <div v-if="loadMethod === 'byBm'" id="bmSelectContainer" class="mt-3">
                   <div class="flex space-x-2">
                     <select
