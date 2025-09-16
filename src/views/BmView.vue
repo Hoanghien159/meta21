@@ -1,6 +1,7 @@
 <template>
   <DataViewLayout>
     <template #datatable>
+      <ReloadModals modal-type="bm" />
       <!-- prettier-ignore -->
       <DataTable :columns="columns" :items="paginatedAccounts" :total-items="filteredAccounts.length" :sort-key="sortKey"
         :sort-order="sortOrder" @sort="sortBy" selectable v-model:current-page="currentPage"
@@ -41,6 +42,7 @@ import DataTable from '@/components/DataTable.vue'
 import AutomationPanel from '@/components/AutomationPanel.vue'
 import DataViewLayout from '@/components/DataViewLayout.vue'
 import { useSelection } from '@/composables/useSelection'
+import ReloadModals from '@/components/ReloadModals.vue'
 
 const adsPageFeatures = ref([
   {

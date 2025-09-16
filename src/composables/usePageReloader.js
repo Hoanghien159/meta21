@@ -1,5 +1,6 @@
 import { useRoute } from 'vue-router'
 import { ref } from 'vue'
+import { useToast } from '@/composables/useToast'
 
 const activeModal = ref(null)
 
@@ -9,6 +10,7 @@ const activeModal = ref(null)
  */
 export function usePageReloader() {
   const route = useRoute()
+  const { addToast } = useToast()
 
   const showModal = (modalName) => {
     activeModal.value = modalName
@@ -18,20 +20,27 @@ export function usePageReloader() {
     activeModal.value = null
   }
 
-  const reloadPage = () => {
-    console.log('Người dùng đang ở trang:', route.path)
-    console.log('Tên route:', route.name)
-    if (route.path === '/ads') {
-      showModal('ads')
-    } else if (route.path === '/bm') {
-      showModal('bm')
-    } else if (route.path === '/page') {
-      console.log('Người dùng đang ở trang page. Thực hiện hành động tương ứng.')
-    } else {
-      // Đối với các trang khác, chỉ cần tải lại
-      window.location.reload()
-    }
+  const loadData = (settings) => {
+    console.log(`Đang tải dữ liệu cho modal: ${activeModal.value} với cài đặt:`, settings)
+    
+    addToast(`Bắt đầu tải dữ liệu cho ${activeModal.value.toUpperCase()}...`, 'info')
+    // TODO: Thêm logic xử lý dữ liệu ở đây
+    // Ví dụ: emit một sự kiện hoặc gọi một API
+    // emit('load-data', settings);
+
+    // Tùy chọn: hiển thị progress bar và đóng popup sau khi hoàn tất
+    closeModal()
   }
 
-  return { reloadPage, activeModal, closeModal }
+  const reloadPage = () => {
+    const modalMap = {
+      '/ads': 'ads',
+      '/bm': 'bm',
+    }
+    const modalToShow = modalMap[route.path]
+    if (modalToShow) showModal(modalToShow)
+    else window.location.reload()
+  }
+
+  return { reloadPage, activeModal, showModal, closeModal, loadData }
 }

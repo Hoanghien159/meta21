@@ -6,14 +6,14 @@
   >
     <!-- Popup content -->
     <div
-      :class="['bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[68vh] flex flex-col transform transition-all duration-300', { 'scale-100 opacity-100': showContent, 'scale-95 opacity-0': !showContent }]"
+      :class="['bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col transform transition-all duration-300', { 'scale-100 opacity-100': showContent, 'scale-95 opacity-0': !showContent }]"
       id="popupContent"
     >
       <!-- Header cố định -->
       <div
         class="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4 flex items-center justify-between rounded-t-xl flex-shrink-0"
       >
-        <h2 class="text-xl font-semibold text-white">Cài đặt tải dữ liệu TKQC</h2>
+        <h2 class="text-xl font-semibold text-white">Cài đặt tải dữ liệu BM</h2>
         <button @click="close" id="closePopupBtn" class="text-white hover:text-gray-200 transition-colors">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -62,57 +62,6 @@
                   ></textarea>
                 </div>
               </div>
-
-              <!-- Tải theo ID BM -->
-              <div class="bg-white dark:bg-gray-700/50 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
-                <label class="flex items-center space-x-3 cursor-pointer">
-                  <input type="radio" name="loadMethod" value="byBmId" v-model="loadMethod" class="w-4 h-4 text-blue-600 focus:ring-blue-500" />
-                  <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Tải theo danh sách ID BM</span>
-                </label>
-                <div class="pl-7 mt-1">
-                  <p class="relative pl-5 text-xs text-gray-500 dark:text-gray-400">
-                    <span class="absolute left-0 top-1.5 w-3 h-px bg-gray-300 dark:bg-gray-600"></span><span class="absolute left-0 -top-0.5 w-px h-3 bg-gray-300 dark:bg-gray-600"></span>Nhập ID Business Manager
-                  </p>
-                <div v-if="loadMethod === 'byBmId'" id="bmIdListContainer" class="mt-3">
-                  <textarea
-                    id="bmIdList"
-                    v-model="bmIdList"
-                    placeholder="Nhập danh sách ID BM, mỗi ID một dòng..."
-                    class="w-full h-20 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:placeholder-gray-400"
-                  ></textarea>
-                </div>
-                </div>
-              </div>
-
-              <!-- Tải theo BM -->
-              <div class="bg-white dark:bg-gray-700/50 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
-                <label class="flex items-center space-x-3 cursor-pointer">
-                  <input type="radio" name="loadMethod" value="byBm" v-model="loadMethod" class="w-4 h-4 text-blue-600 focus:ring-blue-500" />
-                  <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Tải theo BM</span>
-                </label>
-                <div class="pl-7 mt-1">
-                  <p class="relative pl-5 text-xs text-gray-500 dark:text-gray-400">
-                    <span class="absolute left-0 top-1.5 w-3 h-px bg-gray-300 dark:bg-gray-600"></span><span class="absolute left-0 -top-0.5 w-px h-3 bg-gray-300 dark:bg-gray-600"></span>Chọn từ danh sách Business Manager
-                  </p>
-                </div>
-                <div v-if="loadMethod === 'byBm'" id="bmSelectContainer" class="mt-3">
-                  <div class="flex space-x-2">
-                    <select
-                      id="bmSelect"
-                      v-model="selectedBm"
-                      class="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200"
-                    >
-                      <option value="">Chọn Business Manager...</option>
-                      <option value="bm1">BM Marketing Team (ID: 123456)</option>
-                      <option value="bm2">BM Sales Division (ID: 789012)</option>
-                      <option value="bm3">BM Global Campaigns (ID: 345678)</option>
-                    </select>
-                    <button id="loadBmBtn" class="px-4 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 dark:bg-blue-900/50 dark:text-blue-300 dark:hover:bg-blue-800/60 transition-colors font-medium">
-                      Load BM
-                    </button>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -124,35 +73,42 @@
             <h3 class="font-medium text-gray-800 dark:text-gray-200 text-sm">Cài đặt dữ liệu</h3>
 
             <div class="bg-blue-50 dark:bg-gray-900/50 rounded-lg p-4 space-y-4">
-              <!-- Toggle theo hàng ngang -->
-              <div class="grid grid-cols-2 gap-3">
-                <!-- Toggle cho Tài khoản ẩn -->
-                <div class="bg-white dark:bg-gray-700/50 rounded-lg p-3 border border-gray-200 dark:border-gray-700 cursor-pointer flex items-center justify-between" @click="hiddenAccounts = !hiddenAccounts">
-                  <label for="hiddenAccountsCheckbox" class="cursor-pointer">
-                    <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Tài khoản ẩn</span>
-                    <span class="text-xs text-gray-500 dark:text-gray-400 block">Bao gồm tài khoản ẩn</span>
+              <!-- Toggles -->
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <div v-for="option in dataOptions" :key="option.id" class="bg-white dark:bg-gray-700/50 rounded-lg p-3 border border-gray-200 dark:border-gray-700 cursor-pointer flex items-center justify-between" @click="option.model.value = !option.model.value">
+                  <label :for="option.id" class="cursor-pointer">
+                    <span class="text-sm font-medium text-gray-700 dark:text-gray-200">{{ option.label }}</span>
                   </label>
-                  <input type="checkbox" id="hiddenAccountsCheckbox" v-model="hiddenAccounts" @click.stop class="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
-                </div>
-
-                <!-- Toggle cho Thanh toán -->
-                <div class="bg-white dark:bg-gray-700/50 rounded-lg p-3 border border-gray-200 dark:border-gray-700 cursor-pointer flex items-center justify-between" @click="includePayment = !includePayment">
-                  <label for="paymentCheckbox" class="cursor-pointer">
-                    <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Thanh toán</span>
-                    <span class="text-xs text-gray-500 dark:text-gray-400 block">Bao gồm thông tin thanh toán</span>
-                  </label>
-                  <input type="checkbox" id="paymentCheckbox" v-model="includePayment" @click.stop class="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+                  <input type="checkbox" :id="option.id" v-model="option.model.value" @click.stop
+                    class="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                  />
                 </div>
               </div>
 
-              <!-- Số trang -->
-              <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
+              <!-- Số trang và Trạng thái -->
+              <div class="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-4">
                 <div class="flex items-center justify-between">
                   <div class="flex flex-col">
                     <label class="text-sm font-medium text-gray-700 dark:text-gray-200">Số trang</label>
                     <span class="text-xs text-gray-500 dark:text-gray-400">Giới hạn số trang tải về</span>
                   </div>
                   <input type="number" id="pageCount" v-model.number="pageCount" min="1" max="10000" class="w-24 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200" />
+                </div>
+                <div class="flex items-center justify-between">
+                  <div class="flex flex-col">
+                    <label class="text-sm font-medium text-gray-700 dark:text-gray-200">Lấy trạng thái</label>
+                    <span class="text-xs text-gray-500 dark:text-gray-400">Lấy trạng thái của tài khoản</span>
+                  </div>
+                  <select
+                    id="statusSelect"
+                    v-model="statusFilter"
+                    class="w-48 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200"
+                  >
+                    <option value="all">Tất cả</option>
+                    <option value="active">Hoạt động</option>
+                    <option value="inactive">Không hoạt động</option>
+                    <option value="unsettled">Chưa giải quyết</option>
+                  </select>
                 </div>
               </div>
             </div>
@@ -163,7 +119,7 @@
             <button @click="loadData" id="loadDataBtn" class="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 px-4 rounded-lg font-medium hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
               Tải dữ liệu
             </button>
-                <button @click="close" id="cancelBtn" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+            <button @click="close" id="cancelBtn" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
               Hủy bỏ
             </button>
           </div>
@@ -191,15 +147,33 @@ const props = defineProps({
 const emit = defineEmits(['close', 'load-data'])
 
 // --- Popup visibility and animation state ---
-const loadMethod = ref('all') // 'all', 'byId', 'byBmId', 'byBm'
-const hiddenAccounts = ref(false)
-const includePayment = ref(false)
-const pageCount = ref(500)
-const idList = ref('')
-const bmIdList = ref('')
-const selectedBm = ref('')
-
+const loadMethod = ref('all') // 'all', 'byId'
 const showContent = ref(false)
+const idList = ref('')
+const pageCount = ref(500)
+const statusFilter = ref('all')
+
+
+// Data options state
+const status = ref(false)
+const page = ref(false)
+const limit = ref(false)
+const bmAccounts = ref(false)
+const partners = ref(false)
+const admins = ref(false)
+const instagram = ref(false)
+const sharedAccounts = ref(false)
+
+const dataOptions = ref([
+  { id: 'status', label: 'Trạng thái', model: status },
+  { id: 'page', label: 'Page', model: page },
+  { id: 'limit', label: 'Limit', model: limit },
+  { id: 'bmAccounts', label: 'Tài khoản BM', model: bmAccounts },
+  { id: 'partners', label: 'Đối tác', model: partners },
+  { id: 'admins', label: 'Quản trị viên', model: admins },
+  { id: 'instagram', label: 'Instagram', model: instagram },
+  { id: 'sharedAccounts', label: 'Tài khoản share', model: sharedAccounts },
+])
 
 watch(() => props.isVisible, (newValue) => {
   if (newValue) {
@@ -233,19 +207,20 @@ onUnmounted(() => {
 })
 
 const loadData = () => {
+  const selectedOptions = dataOptions.value.reduce((acc, option) => {
+    acc[option.id] = option.model.value;
+    return acc;
+  }, {} as { [key: string]: boolean });
+
   const settings: Record<string, any> = {
     loadMethod: loadMethod.value,
-    hiddenAccounts: hiddenAccounts.value,
-    includePayment: includePayment.value,
+    ...selectedOptions,
     pageCount: pageCount.value,
+    status: statusFilter.value,
   };
 
   if (loadMethod.value === 'byId') {
     settings.idList = idList.value.split('\n').filter(id => id.trim() !== '');
-  } else if (loadMethod.value === 'byBmId') {
-    settings.bmIdList = bmIdList.value.split('\n').filter(id => id.trim() !== '');
-  } else if (loadMethod.value === 'byBm') {
-    settings.selectedBm = selectedBm.value;
   }
 
   emit('load-data', settings);
