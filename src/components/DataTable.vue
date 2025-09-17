@@ -1,6 +1,6 @@
 <template>
   <!-- prettier-ignore -->
-  <div class="metric-card rounded-xl shadow-lg overflow-hidden d-flex flex-column h-100 position-relative" ref="tableWrapper">
+  <div class="metric-card rounded-xl shadow-lg d-flex flex-column h-100 position-relative" ref="tableWrapper">
     <!-- Slot for filters -->
     <div
       v-if="$slots.filters || selectable"
@@ -11,81 +11,93 @@
     </div>
 
     <!-- Table Container -->
-    <div class="table-container custom-scrollbar flex-grow-1">
-      <table class="table table-hover mb-0">
-        <thead class="table-header">
-          <tr>
-            <th v-if="selectable" class="text-center" style="width: 50px">
-              <input
-                type="checkbox"
-                class="form-check-input"
-                :checked="areAllSelected"
-                @change="toggleSelectAllOnPage"
-              />
-            </th>
-            <th
-              v-for="(column, index) in columns"
-              :key="column.key"
-              scope="col"
-              class="text-start"
-              :style="{
-                width: columnWidths[column.key] ? `${columnWidths[column.key]}px` : 'auto',
-              }"
-              @click="column.sortable && $emit('sort', column.key)"
-              :class="{ sortable: column.sortable }"
-            >
-              <div class="d-flex align-items-center">
-                <slot :name="`header(${column.key})`" :column="column">
-                  <span>{{ column.label }}</span>
-                </slot>
-                <i
-                  v-if="sortKey === column.key"
-                  class="ri-arrow-down-s-line sort-icon ms-1"
-                  :class="{ asc: sortOrder === 'asc' }"
-                ></i>
-              </div>
-              <div class="resizer" @mousedown="startResize($event, index)"></div>
-            </th>
-          </tr>
-        </thead>
-        <tbody class="table-body">
-          <tr v-if="items.length === 0">
-            <td :colspan="columns.length + (selectable ? 1 : 0)" class="text-center py-4">
-              Chưa có dữ liệu.
-            </td>
-          </tr>
-          <tr
-            v-for="(item, index) in items"
-            :key="item.id || index"
-            class="align-middle"
-            @mousedown.left.prevent="handleRowMouseDown($event, item)"
-            @mouseover="handleRowMouseOver(item)"
-            @contextmenu.prevent="showContextMenu($event)"
+    <div class="custom-scrollbar flex-grow-1" style="overflow-x: auto; overflow-y: auto; height: calc(100% - 60px)">
+      <table
+        class="table table-hover mb-0"
+        :class="{ 'is-resizing': isResizing }"
+        :style="{
+          'min-width': totalColumnWidths > 0 ? `${totalColumnWidths}px` : '100%',
+          'table-layout': 'auto',
+        }"
+      >
+      <thead class="table-header">
+        <tr>
+          <th v-if="selectable" class="text-center" style="width: 50px">
+            <input
+              type="checkbox"
+              class="form-check-input"
+              :checked="areAllSelected"
+              @change="toggleSelectAllOnPage"
+            />
+          </th>
+          <th
+            v-for="(column, index) in columns"
+            :key="column.key"
+            scope="col"
+            class="text-start"
+            :style="{
+              width: columnWidths[column.key] ? `${columnWidths[column.key]}px` : 'auto',
+            }"
+            :class="{ sortable: column.sortable }"
+            :draggable="true"
+            @dragstart="handleDragStart($event, index)"
+            @dragover.prevent="handleDragOver($event, index)"
+            @dragleave.prevent="handleDragLeave($event)"
+            @drop.prevent="handleDrop($event, index)"
+            @dragend="handleDragEnd"
           >
-            <td v-if="selectable" class="text-center" :class="{ 'row-highlighted': highlightedRows.has(item.id) }">
-              <!-- prettier-ignore -->
-              <input
-                type="checkbox"
-                class="form-check-input"
-                :checked="sharedSelectedIds.includes(item.id)"
-                @change="toggleSelectItem(item)"
-              />
-            </td>
-            <td v-for="column in columns" :key="column.key" :class="{ 'row-highlighted': highlightedRows.has(item.id) }">
-              <!-- Slot for custom cell rendering -->
-              <slot
-                :name="`cell(${column.key})`"
-                :item="item"
-                :value="item[column.key]"
-                :index="index"
-              >
-                <!-- Default cell rendering -->
-                {{ item[column.key] }}
+            <div class="d-flex align-items-center">
+              <slot :name="`header(${column.key})`" :column="column">
+                <span @click="column.sortable && $emit('sort', column.key)">{{ column.label }}</span>
               </slot>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+              <i
+                v-if="sortKey === column.key"
+                class="ri-arrow-down-s-line sort-icon ms-1"
+                :class="{ asc: sortOrder === 'asc' }"
+              ></i>
+            </div>
+              <div class="resizer" @mousedown.stop="startResize($event, index)"></div>
+          </th>
+        </tr>
+      </thead>
+      <tbody class="table-body">
+        <tr v-if="items.length === 0">
+          <td :colspan="columns.length + (selectable ? 1 : 0)" class="text-center py-4">
+            Chưa có dữ liệu.
+          </td>
+        </tr>
+        <tr
+          v-for="(item, index) in items"
+          :key="item.id || index"
+          class="align-middle"
+          @mousedown.left.prevent="handleRowMouseDown($event, item)"
+          @mouseover="handleRowMouseOver(item)"
+          @contextmenu.prevent="showContextMenu($event)"
+        >
+          <td v-if="selectable" class="text-center" :class="{ 'row-highlighted': highlightedRows.has(item.id) }">
+            <!-- prettier-ignore -->
+            <input
+              type="checkbox"
+              class="form-check-input"
+              :checked="sharedSelectedIds.includes(item.id)"
+              @change="toggleSelectItem(item)"
+            />
+          </td>
+          <td v-for="column in columns" :key="column.key" :class="{ 'row-highlighted': highlightedRows.has(item.id) }">
+            <!-- Slot for custom cell rendering -->
+            <slot
+              :name="`cell(${column.key})`"
+              :item="item"
+              :value="item[column.key]"
+              :index="index"
+            >
+              <!-- Default cell rendering -->
+              {{ item[column.key] }}
+            </slot>
+          </td>
+        </tr>
+      </tbody>
+    </table>
     </div>
 
     <!-- Context Menu -->
@@ -108,11 +120,9 @@
       </div>
     </div>
     <!-- Footer -->
-    <div class="table-footer flex-wrap position-absolute bottom-0 start-0 end-0">
+    <div class="table-footer flex-wrap">
       <div class="d-flex align-items-center gap-3">
-        <slot name="bulk-actions">
-          <!-- Bulk actions can be placed here -->
-        </slot>
+        <slot name="bulk-actions"> </slot>
         <div v-if="selectable" class="text-sm footer-text ms-2">Đã chọn: {{ sharedSelectedIds.length }}</div>
         <div v-if="highlightedRows.size > 0" class="text-sm footer-text ms-3">
           Bôi đen: {{ highlightedRows.size }}
@@ -248,6 +258,14 @@ const props = defineProps({
 
 const { sharedSelectedIds, setSelectedIds } = useSelection()
 
+const totalColumnWidths = computed(() => {
+  if (!props.columns || !props.columnWidths) return 0
+  return props.columns.reduce((total, column) => {
+    // Thêm 50px cho cột checkbox nếu có
+    const checkboxWidth = props.selectable ? 50 : 0
+    return total + (props.columnWidths[column.key] || 150) // 150 là chiều rộng mặc định nếu chưa có
+  }, props.selectable ? 50 : 0)
+})
 const statusItems = computed(() => {
   return Object.entries(props.statusCounts).map(([status, count]) => ({
     status,
@@ -345,6 +363,7 @@ const emit = defineEmits([
   'update:itemsPerPage',
   'update:columnWidths',
   'update:statusFilter',
+  'update:columns',
 ])
 function goToPage(page) {
   const pageNumber = parseInt(page, 10)
@@ -442,6 +461,40 @@ const stopResize = () => {
   emit('update:columnWidths', { ...columnWidths.value })
 }
 
+// --- Column Drag and Drop ---
+const draggedIndex = ref(null)
+
+const handleDragStart = (event, index) => {
+  draggedIndex.value = index
+  event.target.style.opacity = '0.5'
+  event.dataTransfer.effectAllowed = 'move'
+}
+
+const handleDragOver = (event, index) => {
+  const th = event.currentTarget
+  th.classList.add('drag-over')
+}
+
+const handleDragLeave = (event) => {
+  event.currentTarget.classList.remove('drag-over')
+}
+
+const handleDrop = (event, droppedIndex) => {
+  if (draggedIndex.value === null || draggedIndex.value === droppedIndex) return
+
+  const newColumns = [...props.columns]
+  const [draggedColumn] = newColumns.splice(draggedIndex.value, 1)
+  newColumns.splice(droppedIndex, 0, draggedColumn)
+
+  emit('update:columns', newColumns)
+}
+
+const handleDragEnd = (event) => {
+  event.target.style.opacity = '1'
+  document.querySelectorAll('.table-header th').forEach(th => th.classList.remove('drag-over'))
+  draggedIndex.value = null
+}
+
 onBeforeUnmount(() => {
   document.removeEventListener('mousemove', handleMouseMove)
   document.removeEventListener('mouseup', stopResize)
@@ -460,7 +513,7 @@ onBeforeUnmount(() => {
 }
 
 .table-body td.row-highlighted {
-  background-color: rgba(13, 110, 253, 0.2) !important; /* Chỉ giữ lại màu nền mờ */
+ background-color: rgb(0 0 0 / 41%); /* Chỉ giữ lại màu nền mờ */
   position: relative;
   /* Nâng cao lớp của dòng được bôi đen để nó nổi lên trên các dòng khác */
   z-index: 11; /* Phải cao hơn z-index của thead (10) */
@@ -514,6 +567,11 @@ onBeforeUnmount(() => {
   cursor: col-resize;
   user-select: none;
   background-color: rgba(139, 185, 254, 0.2);
+  /* Make it a bit wider for easier grabbing */
+  width: 8px;
+  right: -4px;
+  z-index: 1;
+
   opacity: 0;
   transition: opacity 0.2s;
 }
@@ -529,6 +587,7 @@ onBeforeUnmount(() => {
 
 .sortable {
   cursor: pointer;
+  user-select: none;
 }
 
 .sortable:hover {
@@ -553,5 +612,27 @@ onBeforeUnmount(() => {
 /* Ensure text-start is applied correctly */
 .text-start {
   text-align: left !important;
+}
+
+/* Thêm hiệu ứng chuyển động cho việc thay đổi kích thước cột */
+.table th {
+  transition: width 0.2s ease-in-out;
+}
+
+/* Tắt hiệu ứng chuyển động khi đang kéo để đảm bảo hiệu suất */
+.table.is-resizing th {
+  transition: none;
+}
+
+/* Styles for column drag and drop */
+th[draggable='true'] {
+  cursor: grab;
+}
+
+th[draggable='true']:active {
+  cursor: grabbing;
+}
+.drag-over {
+  border-right: 2px solid #0d6efd; /* Highlight drop target */
 }
 </style>

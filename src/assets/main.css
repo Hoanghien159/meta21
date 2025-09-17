@@ -657,14 +657,6 @@ body {
   font-weight: 500;
 }
 
-/* Table styles from new template */
-.table-container {
-  overflow-x: auto;
-  overflow-y: auto;
-  height: calc(100vh - 240px); /* Cố định chiều cao */
-  border-radius: 0.5rem;
-}
-
 .data-table {
   width: 100%;
   min-width: 800px;
@@ -731,8 +723,8 @@ body {
 
 /* Custom scrollbar styles */
 .custom-scrollbar::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 12px; /* Tăng độ rộng thanh cuộn dọc */
+  height: 12px; /* Tăng độ dày thanh cuộn ngang */
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {

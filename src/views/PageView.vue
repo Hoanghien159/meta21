@@ -2,7 +2,7 @@
   <DataViewLayout>
     <template #datatable>
       <!-- prettier-ignore -->
-      <DataTable :columns="columns" :items="paginatedAccounts" :total-items="filteredAccounts.length" :sort-key="sortKey"
+      <DataTable v-model:columns="columns" :items="paginatedAccounts" :total-items="filteredAccounts.length" :sort-key="sortKey"
         :sort-order="sortOrder" @sort="sortBy" selectable v-model:current-page="currentPage"
         v-model:items-per-page="itemsPerPage" :total-pages="totalPages" :column-widths="columnWidths"
         @update:column-widths="columnWidths = $event" :status-counts="statusCounts" v-model:status-filter="statusFilter" @click.stop>

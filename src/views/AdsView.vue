@@ -3,7 +3,7 @@
     <template #datatable>
       <ReloadModals modal-type="ads" />
       <!-- prettier-ignore -->
-      <DataTable :columns="columns" :items="paginatedAccounts" :total-items="filteredAccounts.length" :sort-key="sortKey"
+      <DataTable v-model:columns="columns" :items="paginatedAccounts" :total-items="filteredAccounts.length" :sort-key="sortKey"
         :sort-order="sortOrder" @sort="sortBy" selectable v-model:current-page="currentPage"
         v-model:items-per-page="itemsPerPage" :total-pages="totalPages" :column-widths="columnWidths"
         @update:column-widths="columnWidths = $event" :status-counts="statusCounts" v-model:status-filter="statusFilter" @click.stop>
@@ -69,6 +69,9 @@ const columns = ref([
   { key: 'name', label: 'Tên Tài khoản', sortable: true },
   { key: 'id', label: 'ID Tài khoản', sortable: true },
   { key: 'automation_status', label: 'Trạng thái chạy', sortable: false },
+  { key: 'currency', label: 'Tiền tệ', sortable: true },
+  { key: 'currency', label: 'Tiền tệ', sortable: true },
+  { key: 'currency', label: 'Tiền tệ', sortable: true },
   { key: 'currency', label: 'Tiền tệ', sortable: true },
   { key: 'spent', label: 'Đã chi tiêu', sortable: true },
   { key: 'threshold', label: 'Ngưỡng', sortable: true },
