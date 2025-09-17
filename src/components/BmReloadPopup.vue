@@ -26,14 +26,14 @@
         <div class="p-6 space-y-6">
           <!-- Phương thức tải dữ liệu -->
           <div class="space-y-4">
-            <h3 class="font-medium text-gray-800 dark:text-gray-200 text-sm">Phương thức tải dữ liệu</h3>
+            <h3 class="font-medium dark:text-gray-200 text-sm">Phương thức tải dữ liệu</h3>
 
             <div class="bg-blue-50 dark:bg-gray-900/50 rounded-lg p-4 space-y-4">
               <!-- Tải toàn bộ -->
               <div class="bg-white dark:bg-gray-700/50 rounded-lg p-3 border border-blue-200 dark:border-blue-800">
                 <label class="flex items-center space-x-3 cursor-pointer">
                   <input type="radio" name="loadMethod" value="all" v-model="loadMethod" class="w-4 h-4 text-blue-600 focus:ring-blue-500" />
-                  <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Tải toàn bộ</span>
+                  <span class="text-sm font-medium dark:text-gray-200">Tải toàn bộ</span>
                 </label>
                 <div class="pl-7 mt-1">
                   <p class="relative pl-5 text-xs text-gray-500 dark:text-gray-400">
@@ -46,7 +46,7 @@
               <div class="bg-white dark:bg-gray-700/50 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
                 <label class="flex items-center space-x-3 cursor-pointer">
                   <input type="radio" name="loadMethod" value="byId" v-model="loadMethod" class="w-4 h-4 text-blue-600 focus:ring-blue-500" />
-                  <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Tải theo ID</span>
+                  <span class="text-sm font-medium dark:text-gray-200">Tải theo ID</span>
                 </label>
                 <div class="pl-7 mt-1">
                   <p class="relative pl-5 text-xs text-gray-500 dark:text-gray-400">
@@ -70,18 +70,43 @@
 
           <!-- Cài đặt dữ liệu -->
           <div class="space-y-4">
-            <h3 class="font-medium text-gray-800 dark:text-gray-200 text-sm">Cài đặt dữ liệu</h3>
+            <h3 class="font-medium dark:text-gray-200 text-sm">Cài đặt dữ liệu</h3>
 
             <div class="bg-blue-50 dark:bg-gray-900/50 rounded-lg p-4 space-y-4">
               <!-- Toggles -->
-              <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                <div v-for="option in dataOptions" :key="option.id" class="bg-white dark:bg-gray-700/50 rounded-lg p-3 border border-gray-200 dark:border-gray-700 cursor-pointer flex items-center justify-between" @click="option.model.value = !option.model.value">
-                  <label :for="option.id" class="cursor-pointer">
-                    <span class="text-sm font-medium text-gray-700 dark:text-gray-200">{{ option.label }}</span>
+              <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                <div class="bg-white dark:bg-gray-700/50 rounded-lg p-3 border border-gray-200 dark:border-gray-700 cursor-pointer flex items-center justify-between" @click="status = !status">
+                  <label for="status" class="font-medium cursor-pointer text-sm dark:text-gray-200">Trạng thái</label>
+                  <input id="status" v-model="status" type="checkbox" class="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" @click.stop />
+                </div>
+                <div class="bg-white dark:bg-gray-700/50 rounded-lg p-3 border border-gray-200 dark:border-gray-700 cursor-pointer flex items-center justify-between" @click="page = !page">
+                  <label for="page" class="font-medium cursor-pointer text-sm dark:text-gray-200">Page</label>
+                  <input id="page" v-model="page" type="checkbox" class="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" @click.stop />
+                </div>
+                <div class="bg-white dark:bg-gray-700/50 rounded-lg p-3 border border-gray-200 dark:border-gray-700 cursor-pointer flex items-center justify-between" @click="limit = !limit">
+                  <label for="limit" class="font-medium cursor-pointer text-sm dark:text-gray-200">Limit</label>
+                  <input id="limit" v-model="limit" type="checkbox" class="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" @click.stop />
+                </div>
+                <div class="bg-white dark:bg-gray-700/50 rounded-lg p-3 border border-gray-200 dark:border-gray-700 cursor-pointer flex items-center justify-between" @click="bmAccounts = !bmAccounts">
+                  <label for="bmAccounts" class="font-medium cursor-pointer text-sm dark:text-gray-200">Tài khoản BM</label>
+                  <input id="bmAccounts" v-model="bmAccounts" type="checkbox" class="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" @click.stop />
+                </div>
+                <div class="bg-white dark:bg-gray-700/50 rounded-lg p-3 border border-gray-200 dark:border-gray-700 cursor-pointer flex items-center justify-between" @click="partners = !partners">
+                  <label for="partners" class="font-medium cursor-pointer text-sm dark:text-gray-200">Đối tác</label>
+                  <input id="partners" v-model="partners" type="checkbox" class="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" @click.stop />
+                </div>
+                <div class="bg-white dark:bg-gray-700/50 rounded-lg p-3 border border-gray-200 dark:border-gray-700 cursor-pointer flex items-center justify-between" @click="admins = !admins">
+                  <label for="admins" class="font-medium cursor-pointer text-sm dark:text-gray-200">Quản trị viên</label>
+                  <input id="admins" v-model="admins" type="checkbox" class="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" @click.stop />
+                </div>
+                <div class="bg-white dark:bg-gray-700/50 rounded-lg p-3 border border-gray-200 dark:border-gray-700 cursor-pointer flex items-center justify-between" @click="instagram = !instagram">
+                  <label for="instagram" class="font-medium cursor-pointer text-sm dark:text-gray-200">Instagram</label>
+                  <input id="instagram" v-model="instagram" type="checkbox" class="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" @click.stop />
+                </div>
+                <div class="bg-white dark:bg-gray-700/50 rounded-lg p-3 border border-gray-200 dark:border-gray-700 cursor-pointer flex items-center justify-between" @click="sharedAccounts = !sharedAccounts">
+                  <label for="sharedAccounts" class="font-medium cursor-pointer text-sm dark:text-gray-200">Tài khoản share
                   </label>
-                  <input type="checkbox" :id="option.id" v-model="option.model.value" @click.stop
-                    class="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                  />
+                  <input id="sharedAccounts" v-model="sharedAccounts" type="checkbox" class="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" @click.stop />
                 </div>
               </div>
 
@@ -89,14 +114,14 @@
               <div class="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-4">
                 <div class="flex items-center justify-between">
                   <div class="flex flex-col">
-                    <label class="text-sm font-medium text-gray-700 dark:text-gray-200">Số trang</label>
+                    <label class="text-sm font-medium dark:text-gray-200">Số trang</label>
                     <span class="text-xs text-gray-500 dark:text-gray-400">Giới hạn số trang tải về</span>
                   </div>
                   <input type="number" id="pageCount" v-model.number="pageCount" min="1" max="10000" class="w-24 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200" />
                 </div>
                 <div class="flex items-center justify-between">
                   <div class="flex flex-col">
-                    <label class="text-sm font-medium text-gray-700 dark:text-gray-200">Lấy trạng thái</label>
+                    <label class="text-sm font-medium dark:text-gray-200">Lấy trạng thái</label>
                     <span class="text-xs text-gray-500 dark:text-gray-400">Lấy trạng thái của tài khoản</span>
                   </div>
                   <select
@@ -119,7 +144,7 @@
             <button @click="loadData" id="loadDataBtn" class="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 px-4 rounded-lg font-medium hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
               Tải dữ liệu
             </button>
-            <button @click="close" id="cancelBtn" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+            <button @click="close" id="cancelBtn" class="px-6 py-3 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
               Hủy bỏ
             </button>
           </div>
@@ -164,17 +189,6 @@ const admins = ref(false)
 const instagram = ref(false)
 const sharedAccounts = ref(false)
 
-const dataOptions = ref([
-  { id: 'status', label: 'Trạng thái', model: status },
-  { id: 'page', label: 'Page', model: page },
-  { id: 'limit', label: 'Limit', model: limit },
-  { id: 'bmAccounts', label: 'Tài khoản BM', model: bmAccounts },
-  { id: 'partners', label: 'Đối tác', model: partners },
-  { id: 'admins', label: 'Quản trị viên', model: admins },
-  { id: 'instagram', label: 'Instagram', model: instagram },
-  { id: 'sharedAccounts', label: 'Tài khoản share', model: sharedAccounts },
-])
-
 watch(() => props.isVisible, (newValue) => {
   if (newValue) {
     // Open popup
@@ -207,16 +221,18 @@ onUnmounted(() => {
 })
 
 const loadData = () => {
-  const selectedOptions = dataOptions.value.reduce((acc, option) => {
-    acc[option.id] = option.model.value;
-    return acc;
-  }, {} as { [key: string]: boolean });
-
   const settings: Record<string, any> = {
     loadMethod: loadMethod.value,
-    ...selectedOptions,
+    status: status.value,
+    page: page.value,
+    limit: limit.value,
+    bmAccounts: bmAccounts.value,
+    partners: partners.value,
+    admins: admins.value,
+    instagram: instagram.value,
+    sharedAccounts: sharedAccounts.value,
     pageCount: pageCount.value,
-    status: statusFilter.value,
+    statusFilter: statusFilter.value,
   };
 
   if (loadMethod.value === 'byId') {

@@ -6,7 +6,7 @@
   >
     <!-- Popup content -->
     <div
-      :class="['bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[68vh] flex flex-col transform transition-all duration-300', { 'scale-100 opacity-100': showContent, 'scale-95 opacity-0': !showContent }]"
+      :class="['bg-white dark:bg-glass-dark rounded-xl dark:shadow-glass-dark w-full max-w-2xl max-h-[68vh] flex flex-col transform transition-all duration-300 dark:border dark:border-white/10', { 'scale-100 opacity-100': showContent, 'scale-95 opacity-0': !showContent }]"
       id="popupContent"
     >
       <!-- Header cố định -->
@@ -26,14 +26,14 @@
         <div class="p-6 space-y-6">
           <!-- Phương thức tải dữ liệu -->
           <div class="space-y-4">
-            <h3 class="font-medium text-gray-800 dark:text-gray-200 text-sm">Phương thức tải dữ liệu</h3>
+            <h3 class="font-medium  dark:text-gray-200 text-sm">Phương thức tải dữ liệu</h3>
 
             <div class="bg-blue-50 dark:bg-gray-900/50 rounded-lg p-4 space-y-4">
               <!-- Tải toàn bộ -->
               <div class="bg-white dark:bg-gray-700/50 rounded-lg p-3 border border-blue-200 dark:border-blue-800">
                 <label class="flex items-center space-x-3 cursor-pointer">
                   <input type="radio" name="loadMethod" value="all" v-model="loadMethod" class="w-4 h-4 text-blue-600 focus:ring-blue-500" />
-                  <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Tải toàn bộ</span>
+                  <span class="text-sm font-medium dark:text-gray-200">Tải toàn bộ</span>
                 </label>
                 <div class="pl-7 mt-1">
                   <p class="relative pl-5 text-xs text-gray-500 dark:text-gray-400">
@@ -46,7 +46,7 @@
               <div class="bg-white dark:bg-gray-700/50 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
                 <label class="flex items-center space-x-3 cursor-pointer">
                   <input type="radio" name="loadMethod" value="byId" v-model="loadMethod" class="w-4 h-4 text-blue-600 focus:ring-blue-500" />
-                  <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Tải theo ID</span>
+                  <span class="text-sm font-medium dark:text-gray-200">Tải theo ID</span>
                 </label>
                 <div class="pl-7 mt-1">
                   <p class="relative pl-5 text-xs text-gray-500 dark:text-gray-400">
@@ -67,7 +67,7 @@
               <div class="bg-white dark:bg-gray-700/50 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
                 <label class="flex items-center space-x-3 cursor-pointer">
                   <input type="radio" name="loadMethod" value="byBmId" v-model="loadMethod" class="w-4 h-4 text-blue-600 focus:ring-blue-500" />
-                  <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Tải theo danh sách ID BM</span>
+                  <span class="text-sm font-medium dark:text-gray-200">Tải theo danh sách ID BM</span>
                 </label>
                 <div class="pl-7 mt-1">
                   <p class="relative pl-5 text-xs text-gray-500 dark:text-gray-400">
@@ -88,7 +88,7 @@
               <div class="bg-white dark:bg-gray-700/50 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
                 <label class="flex items-center space-x-3 cursor-pointer">
                   <input type="radio" name="loadMethod" value="byBm" v-model="loadMethod" class="w-4 h-4 text-blue-600 focus:ring-blue-500" />
-                  <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Tải theo BM</span>
+                  <span class="text-sm font-medium dark:text-gray-200">Tải theo BM</span>
                 </label>
                 <div class="pl-7 mt-1">
                   <p class="relative pl-5 text-xs text-gray-500 dark:text-gray-400">
@@ -121,7 +121,7 @@
 
           <!-- Cài đặt dữ liệu -->
           <div class="space-y-4">
-            <h3 class="font-medium text-gray-800 dark:text-gray-200 text-sm">Cài đặt dữ liệu</h3>
+            <h3 class="font-medium dark:text-gray-200 text-sm">Cài đặt dữ liệu</h3>
 
             <div class="bg-blue-50 dark:bg-gray-900/50 rounded-lg p-4 space-y-4">
               <!-- Toggle theo hàng ngang -->
@@ -129,7 +129,7 @@
                 <!-- Toggle cho Tài khoản ẩn -->
                 <div class="bg-white dark:bg-gray-700/50 rounded-lg p-3 border border-gray-200 dark:border-gray-700 cursor-pointer flex items-center justify-between" @click="hiddenAccounts = !hiddenAccounts">
                   <label for="hiddenAccountsCheckbox" class="cursor-pointer">
-                    <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Tài khoản ẩn</span>
+                    <span class="text-sm font-medium dark:text-gray-200">Tài khoản ẩn</span>
                     <span class="text-xs text-gray-500 dark:text-gray-400 block">Bao gồm tài khoản ẩn</span>
                   </label>
                   <input type="checkbox" id="hiddenAccountsCheckbox" v-model="hiddenAccounts" @click.stop class="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
@@ -138,7 +138,7 @@
                 <!-- Toggle cho Thanh toán -->
                 <div class="bg-white dark:bg-gray-700/50 rounded-lg p-3 border border-gray-200 dark:border-gray-700 cursor-pointer flex items-center justify-between" @click="includePayment = !includePayment">
                   <label for="paymentCheckbox" class="cursor-pointer">
-                    <span class="text-sm font-medium text-gray-700 dark:text-gray-200">Thanh toán</span>
+                    <span class="text-sm font-medium dark:text-gray-200">Thanh toán</span>
                     <span class="text-xs text-gray-500 dark:text-gray-400 block">Bao gồm thông tin thanh toán</span>
                   </label>
                   <input type="checkbox" id="paymentCheckbox" v-model="includePayment" @click.stop class="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
@@ -149,7 +149,7 @@
               <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
                 <div class="flex items-center justify-between">
                   <div class="flex flex-col">
-                    <label class="text-sm font-medium text-gray-700 dark:text-gray-200">Số trang</label>
+                    <label class="text-sm font-medium dark:text-gray-200">Số trang</label>
                     <span class="text-xs text-gray-500 dark:text-gray-400">Giới hạn số trang tải về</span>
                   </div>
                   <input type="number" id="pageCount" v-model.number="pageCount" min="1" max="10000" class="w-24 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200" />
@@ -163,7 +163,7 @@
             <button @click="loadData" id="loadDataBtn" class="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 px-4 rounded-lg font-medium hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
               Tải dữ liệu
             </button>
-                <button @click="close" id="cancelBtn" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+                <button @click="close" id="cancelBtn" class="px-6 py-3 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
               Hủy bỏ
             </button>
           </div>
