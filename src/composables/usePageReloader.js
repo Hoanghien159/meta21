@@ -22,8 +22,16 @@ export function usePageReloader() {
 
   const loadData = (settings) => {
     console.log(`Đang tải dữ liệu cho modal: ${activeModal.value} với cài đặt:`, settings)
-    
+
     addToast(`Bắt đầu tải dữ liệu cho ${activeModal.value.toUpperCase()}...`, 'info')
+    if (activeModal.value === 'ads') {
+      getAdAccountsADS(IDKQC)
+      addToast('Dữ liệu quảng cáo đã được tải lại thành công!', 'success')
+    } else if (activeModal.value === 'bm') {
+      addToast('Dữ liệu Business Manager đã được tải lại thành công!', 'success')
+    } else {
+      addToast('Không xác định modal để tải dữ liệu.', 'error')
+    }
     // TODO: Thêm logic xử lý dữ liệu ở đây
     // Ví dụ: emit một sự kiện hoặc gọi một API
     // emit('load-data', settings);

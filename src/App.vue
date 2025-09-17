@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup>
 import { onMounted } from 'vue'
 import TheHeader from './components/TheHeader.vue'
 import SettingsModal from './components/SettingsModal.vue'

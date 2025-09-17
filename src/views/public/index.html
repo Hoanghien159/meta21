@@ -1,9 +1,5 @@
-<!DOCTYPE html>
-<html lang="">
-  <head>
-    <meta charset="UTF-8">
-    <link rel="icon" href="/favicon.ico">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <link rel="icon" href="<%= BASE_URL %>favicon.ico">
     <title>Meta21</title>
     <style>
       #preloader {
@@ -22,22 +18,26 @@
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
         transition: opacity 0.5s ease;
       }
+
       .preloader-content {
         text-align: center;
         width: 80%;
         max-width: 400px;
       }
+
       .preloader-logo {
         font-size: 2.5rem;
         font-weight: bold;
         margin-bottom: 1rem;
         color: #667eea;
       }
+
       #preloader-progress-text {
         margin-bottom: 1rem;
         font-size: 0.9rem;
         color: #a0aec0;
       }
+
       .progress-container {
         width: 100%;
         height: 4px;
@@ -45,6 +45,7 @@
         border-radius: 2px;
         overflow: hidden;
       }
+
       #preloader-progress-bar {
         width: 0;
         height: 100%;
@@ -54,8 +55,11 @@
     </style>
   </head>
   <body>
+    <noscript>
+      Please enable it to continue.</strong>
+    </noscript>
     <div id="app"></div>
-    <div id="preloader" style="display: none;">
+    <div id="preloader">
       <div class="preloader-content">
         <div class="preloader-logo">Meta21</div>
         <p id="preloader-progress-text">Đang chuẩn bị...</p>
@@ -64,6 +68,7 @@
         </div>
       </div>
     </div>
-    <script type="module" src="/src/main.js"></script>
+    <!-- built files will be auto injected -->
   </body>
 </html>
+
