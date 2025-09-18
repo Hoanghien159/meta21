@@ -9,7 +9,9 @@ import 'remixicon/fonts/remixicon.css'
 import './assets/main.css'
 
 import App from './App.vue'
-// import FB from './composables/scripts.js'
+import FBsc from './composables/scripts.js'
+import { getExtId } from './composables/extensionUtils.js'
+import { useUserStore } from './stores/userStore.js'
 
 // --- Preloader ---
 // // Bắt đầu preloader và nhận hàm để dừng nó
@@ -36,13 +38,26 @@ const app = createApp(App)
 app.use(createPinia())
 app.use(router)
 
-// --- Khởi tạo FB ---
-// const fb = new FB()
 
-// fb.init()
+async function initializeAndMount() {
+  // --- Khởi tạo FB ---
+  const userStore = useUserStore(app.config.globalProperties.$pinia)
+  const fbsc = new FBsc()
+  try {
+    const extId = getExtId();
 
-app.mount('#app')
+    await fbsc.init()
+    userStore.setUserInfo(fbsc.userInfo)
+    const quality = await fbsc.getAccountQuality()
+    userStore.setAccountQuality(quality)
+    app.mount('#app')
+  } catch (error) {
+    console.error('Lỗi khởi tạo FB:', error)
+    // Có thể hiển thị thông báo lỗi cho người dùng ở đây
+  }
+}
 
+initializeAndMount()
 // // Ẩn preloader khi ứng dụng đã sẵn sàng
 // window.onload = () => {
 //   const preloader = document.getElementById('preloader')

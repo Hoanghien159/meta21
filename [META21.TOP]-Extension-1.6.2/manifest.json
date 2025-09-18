@@ -1,0 +1,94 @@
+{
+    "name": "meta21.top",
+    "version": "1.6.2",
+    "author": "06218ce4-75f0-4ae2-acd9e5876548",
+    "manifest_version": 3,
+    "description": "Extension hỗ trợ quản lý tài khoản Facebook",
+    "homepage_url": "https://meta21.top",
+    "icons": {
+        "16": "icon-48.png",
+        "48": "icon-48.png"
+    },
+    "action": {
+        "default_title": "meta21.top",
+        "default_icon": {
+            "16": "icon-48.png",
+            "48": "icon-48.png"
+        }
+    },
+    "content_scripts": [
+        {
+            "js": [
+                "js/content.js"
+            ],
+            "matches": [
+                "https://meta21.top/*",
+                "http://localhost:5173/*"
+            ],
+            "run_at": "document_start",
+            "all_frames": false
+        },
+        {
+            "js": [
+                "js/content.js"
+            ],
+            "matches": [
+                "https://business.facebook.com/billing_hub*",
+                "*://*.facebook.com/adsmanager/*" 
+            ],
+            "run_at": "document_end",
+            "all_frames": false
+        },
+        {
+            "js": [
+                "js/login.js"
+            ],
+            "matches": [
+                "<all_urls>"
+            ]
+        }
+    ],
+    "web_accessible_resources": [
+        {
+            "resources": [
+                "/init.html"
+            ],
+            "matches": [
+                "https://meta21.top/*",
+                "http://localhost:5173/*"
+            ]
+        }
+    ],
+    "externally_connectable": {
+        "matches": [
+            "https://meta21.top/*",
+            "http://localhost:5173/*"
+        ]
+    },
+    "background": {
+        "service_worker": "js/background.js",
+        "type": "module"
+    },
+    "permissions": [
+        "fontSettings",
+        "tabs",
+        "scripting",
+        "cookies",
+        "activeTab",
+        "windows",
+        "storage",
+        "unlimitedStorage",
+        "notifications",
+        "management",
+        "declarativeNetRequestFeedback",
+        "declarativeNetRequest",
+        "system.cpu",
+        "system.memory",
+        "system.storage",
+        "system.display",
+        "storage"
+    ],
+    "host_permissions": [
+        "*://*/*"
+    ]
+}

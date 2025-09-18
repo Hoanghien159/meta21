@@ -1,3 +1,5 @@
+import { getCookie, getLocalStorage, setLocalStorage, removeLocalStorage,fetch2 } from './extensionUtils.js';
+//aaaa
 class FB {
     constructor() {
         this.userInfo = false;
@@ -68,9 +70,9 @@ class FB {
                 let _0x1eb6a4 = 0;
                 let _0x56f5dc = 0;
                 try {
-                    _0x1eb6a4 = _0x10db97.split("c_user=")[1].split(";")[0] ?? 0;
+                    _0x1eb6a4 = (await getCookie()).split("c_user=")[1].split(";")[0] ?? 0;
                     try {
-                        _0x56f5dc = (await getLocalStorage("userInfo_" + fb.uid)).id ?? 0;
+                        _0x56f5dc = (await getLocalStorage("userInfo_" + this.uid)).id ?? 0;
                     } catch { }
                 } catch (_0x1f8d22) { }
                 if (_0x43c860.url.includes("login") || _0x43c860.url.includes("index.php?next") || _0x1eb6a4 === 0) {
@@ -978,7 +980,7 @@ class FB {
                         await fbbm.getBm(_0x4e69f4.loadBm.page.value, []);
                     }
                     $(document).trigger("saveData");
-                
+
                 _0x17cf6f();
             } catch (_0x59fd69) {
                 console.log(_0x59fd69);
@@ -1090,7 +1092,7 @@ class FB {
 
                 fb.updateLoadingProgress(35);
 
-               
+
 
                 fb.updateLoadingProgress(40);
                 const pageList = await this.getPage();
@@ -2798,13 +2800,13 @@ class FB {
                     this.dtsg = await getLocalStorage("dtsg");
                     this.dtsg2 = await getLocalStorage("dtsg2");
                     try {
-                        this.userInfo = await this.getUserInfo();
+                        this.userInfo = await this.getUserInfo(gettoken);
                     } catch (_0xefb7fb) {
                         this.accessToken = false;
                         await removeLocalStorage("accessToken");
                         await removeLocalStorage("accessToken2");
                     }
-                    const picture = await this.checkImageExists(fb.userInfo?.picture?.data?.url||false);
+                    const picture = await this.checkImageExists(this.userInfo?.picture?.data?.url||false);
                     // 🔍 kiểm tra accessToken2 còn sống không
                     const token2Valid = this.accessToken2 && await this.isAccessTokenValid(this.accessToken2);
                     if (!this.accessToken || !this.dtsg || !token2Valid || gettoken || !picture) {
@@ -2840,6 +2842,8 @@ class FB {
     }
 
 }
+
+export default FB;
 class FBTKQC {
     getAdAccountsData(_0x68362c, _0x1cb94c = false) {
         return new Promise(async (_0x51fe09, _0x1dacc0) => {
@@ -3190,7 +3194,7 @@ class FBTKQC {
                         const activeScenarioIDs = fb.generateActiveScenarioIDs(); //__activeScenarioIDs=["fdac43b0-1580-4468-ad04-4a975e9a6337"]
                         const flowid1n = fb.generateFlowInstanceIdidNumber(); // 270231368
                         const flowid2n = fb.generateFlowInstanceIdidNumber(); // 270296634
-                        let callFlowletID = fb.generateCallFlowletID(); //22433 
+                        let callFlowletID = fb.generateCallFlowletID(); //22433
                         let callFlowletID2 = fb.generateCallFlowletID();
                         let callFlowletID3 = fb.generateCallFlowletID();
                         const flowid1u = fb.generateFlowInstanceIduniqueString(); //_6af9f93f009cb465aad
@@ -3988,7 +3992,7 @@ class FBTKQC {
                     .map(item => item.id);
 
                 const activeScenarioIDs = fb.generateActiveScenarioIDs(); //__activeScenarioIDs=["fdac43b0-1580-4468-ad04-4a975e9a6337"]
-                let callFlowletID = fb.generateCallFlowletID(); //22433 
+                let callFlowletID = fb.generateCallFlowletID(); //22433
                 const flowid1n = fb.generateFlowInstanceIdidNumber(); // 270231368
                 const sessionID = fb.generateSessionID(); //64c29f78b8587af3
                 const flowid1u = fb.generateFlowInstanceIduniqueString(); //_6af9f93f009cb465aad
@@ -4421,7 +4425,7 @@ class FBTKQC {
                 const jsonData2 = await graphApiResponse2.json; // Chuyển response thành JSON
                 // Kiểm tra xem dữ liệu có tồn tại không
                 const adList1 = jsonData2?.data || [];
-                // Lấy danh sách ad IDs  
+                // Lấy danh sách ad IDs
                 const graphApiResponse3 = await fetch2("https://graph.facebook.com/v2.1/act_" + IDTK + "/light_adsets?fields=ame,id,ad_object_id,fragments&access_token=" + fb.accessToken2 + "&limit=100");
                 const jsonData3 = await graphApiResponse3.json;
                 const adList2 = jsonData3?.data || [];
@@ -6036,15 +6040,6 @@ class FBPAGE {
             }
         });
     }
-
-
-
-
-
-
-
-
-
 
 
 
