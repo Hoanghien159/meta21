@@ -22,7 +22,7 @@ export function useAutomation() {
 
   const emit = (event, ...args) => {
     if (listeners.value[event]) {
-      listeners.value[event].forEach(callback => callback(...args))
+      listeners.value[event].forEach((callback) => callback(...args))
     }
   }
 

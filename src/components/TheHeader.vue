@@ -2,7 +2,7 @@
   <header
     v-if="userStore.userInfo"
     class="p-3 d-flex justify-content-between align-items-center header-glass"
-    style="position: relative; z-index: 1050;"
+    style="position: relative; z-index: 1050"
   >
     <!-- Left Section -->
     <div class="d-flex align-items-center gap-4">
@@ -22,9 +22,7 @@
       <!-- App Name & Version -->
       <div>
         <h1 class="h4 fw-bold app-title m-0">ex.meta21.top</h1>
-        <span class="badge rounded-pill app-version fw-medium">
-          Facebook Manager v3.2
-        </span>
+        <span class="badge rounded-pill app-version fw-medium"> Facebook Manager v3.2 </span>
       </div>
 
       <!-- Navigation -->
@@ -51,11 +49,8 @@
 
       <!-- Settings Button -->
 
- <div class="d-flex align-items-center gap-2">
-        <button
-          class="btn btn-secondary fw-bold shadow-sm settings-btn"
-          @click="reloadPage"
-        >
+      <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-secondary fw-bold shadow-sm settings-btn" @click="reloadPage">
           <i class="ri-refresh-line me-1"></i> Tải lại
         </button>
         <button
@@ -89,12 +84,22 @@
             </div>
           </div>
         </div>
-        <div class="dropdown-menu dropdown-menu-end overflow-hidden p-0 shadow" style="width: 320px; z-index: 1051;">
+        <div
+          class="dropdown-menu dropdown-menu-end overflow-hidden p-0 shadow"
+          style="width: 320px; z-index: 1051"
+        >
           <template v-if="userStore.userInfo">
             <div class="p-2" style="background: #f0ecf4">
               <div class="d-flex align-items-center justify-content-center">
-                <div class="rounded-circle overflow-hidden shadow bg-white" style="width: 70px; margin-bottom: -35px">
-                  <img class="w-100 p-1 rounded-circle" :src="userStore.userInfo.picture?.data?.url" alt="User Avatar" />
+                <div
+                  class="rounded-circle overflow-hidden shadow bg-white"
+                  style="width: 70px; margin-bottom: -35px"
+                >
+                  <img
+                    class="w-100 p-1 rounded-circle"
+                    :src="userStore.userInfo.picture?.data?.url"
+                    alt="User Avatar"
+                  />
                 </div>
               </div>
             </div>
@@ -102,25 +107,63 @@
               <div class="d-flex flex-column align-items-center">
                 <span class="fw-bold fs-5">{{ userStore.userInfo.name }}</span>
                 <span class="mb-2 text-muted">{{ userStore.userInfo.id }}</span>
-                <a :href="`https://www.facebook.com/business-support-home/${userStore.userInfo.id}`" target="_BLANK" class="text-decoration-none badge mb-1" :class="accountQualityClass" style="font-size: 12px;">
+                <a
+                  :href="`https://www.facebook.com/business-support-home/${userStore.userInfo.id}`"
+                  target="_BLANK"
+                  class="text-decoration-none badge mb-1"
+                  :class="accountQualityClass"
+                  style="font-size: 12px"
+                >
                   {{ userStore.accountQuality?.status || 'Checking...' }}
                 </a>
               </div>
             </div>
             <ul class="p-3 m-0 border-top list-unstyled">
-              <li><span class="py-1 d-block fw-medium"><i class="ri-mail-line me-2"></i> Email: {{ userStore.userInfo.email || 'N/A' }}</span></li>
-              <li><span class="py-1 d-block fw-medium"><i class="ri-calendar-line me-2"></i> Ngày sinh: {{ userStore.userInfo.birthday || 'N/A' }}</span></li>
-              <li><span class="py-1 d-block fw-medium"><i class="ri-group-line me-2"></i> Bạn bè: {{ userStore.userInfo.friends || 'N/A' }}</span></li>
-              <li><span class="py-1 d-block fw-medium"><i class="ri-men-line me-2"></i> Giới tính: {{ userStore.userInfo.gender || 'N/A' }}</span></li>
+              <li>
+                <span class="py-1 d-block fw-medium"
+                  ><i class="ri-mail-line me-2"></i> Email:
+                  {{ userStore.userInfo.email || 'N/A' }}</span
+                >
+              </li>
+              <li>
+                <span class="py-1 d-block fw-medium"
+                  ><i class="ri-calendar-line me-2"></i> Ngày sinh:
+                  {{ userStore.userInfo.birthday || 'N/A' }}</span
+                >
+              </li>
+              <li>
+                <span class="py-1 d-block fw-medium"
+                  ><i class="ri-group-line me-2"></i> Bạn bè:
+                  {{ userStore.userInfo.friends || 'N/A' }}</span
+                >
+              </li>
+              <li>
+                <span class="py-1 d-block fw-medium"
+                  ><i class="ri-men-line me-2"></i> Giới tính:
+                  {{ userStore.userInfo.gender || 'N/A' }}</span
+                >
+              </li>
             </ul>
             <ul class="border-top p-3 m-0 list-unstyled">
-              <li><a href="#" @click.prevent="switchAccount" class="text-decoration-none py-1 d-block fw-medium dropdown-item"><i class="ri-repeat-line me-2"></i> Chuyển tài khoản</a></li>
-              <li><a href="#" @click.prevent="logout" class="text-decoration-none py-1 d-block fw-medium dropdown-item"><i class="ri-logout-box-r-line me-2"></i> Đăng xuất</a></li>
+              <li>
+                <a
+                  href="#"
+                  @click.prevent="switchAccount"
+                  class="text-decoration-none py-1 d-block fw-medium dropdown-item"
+                  ><i class="ri-repeat-line me-2"></i> Chuyển tài khoản</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  @click.prevent="logout"
+                  class="text-decoration-none py-1 d-block fw-medium dropdown-item"
+                  ><i class="ri-logout-box-r-line me-2"></i> Đăng xuất</a
+                >
+              </li>
             </ul>
           </template>
-          <div v-else class="p-3 text-center">
-            Đang tải dữ liệu người dùng...
-          </div>
+          <div v-else class="p-3 text-center">Đang tải dữ liệu người dùng...</div>
         </div>
       </div>
     </div>
@@ -149,19 +192,18 @@ const switchAccount = () => {
 }
 
 const logout = async () => {
-  await removeLocalStorage("accessToken");
-  await removeLocalStorage("accessToken2");
-  await removeLocalStorage("dtsg");
-  await removeLocalStorage("dtsg2");
-  await removeLocalStorage(`userInfo_${userStore.userInfo?.id}`);
-  await removeLocalStorage("uid");
-  userStore.clearUserInfo();
-  window.location.reload();
+  await removeLocalStorage('accessToken')
+  await removeLocalStorage('accessToken2')
+  await removeLocalStorage('dtsg')
+  await removeLocalStorage('dtsg2')
+  await removeLocalStorage(`userInfo_${userStore.userInfo?.id}`)
+  await removeLocalStorage('uid')
+  userStore.clearUserInfo()
+  window.location.reload()
 }
 </script>
 
 <style scoped>
-
 [data-bs-theme='dark'] .header-glass {
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(12px);
@@ -242,7 +284,9 @@ const logout = async () => {
   background: linear-gradient(135deg, #ffecd2, #fcb69f);
   color: #222;
   font-weight: bold;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 3px 12px rgba(0, 0, 0, 0.3);
+  box-shadow:
+    0 0 10px rgba(255, 255, 255, 0.5),
+    0 3px 12px rgba(0, 0, 0, 0.3);
   transform: scale(1) translateY(-3px);
 }
 

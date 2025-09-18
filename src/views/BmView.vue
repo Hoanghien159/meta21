@@ -74,13 +74,13 @@ const adsPageFeatures = ref([
 ])
 
 const columns = ref([
-  { key: 'stt', label: 'STT', sortable: true },
-  { key: 'name', label: 'Tên Tài khoản', sortable: true },
-  { key: 'id', label: 'ID Tài khoản', sortable: true },
-  { key: 'status', label: 'Trạng thái', sortable: true },
-  { key: 'currency', label: 'Tiền tệ', sortable: true },
-  { key: 'spent', label: 'Đã chi tiêu', sortable: true },
-  { key: 'threshold', label: 'Ngưỡng', sortable: true },
+  { key: 'stt', label: 'STT', sortable: true, minWidth: 60, maxWidth: 100 },
+  { key: 'name', label: 'Tên Tài khoản', sortable: true, minWidth: 250 },
+  { key: 'id', label: 'ID Tài khoản', sortable: true, minWidth: 180 },
+  { key: 'status', label: 'Trạng thái', sortable: true, minWidth: 120 },
+  { key: 'currency', label: 'Tiền tệ', sortable: true, minWidth: 100 },
+  { key: 'spent', label: 'Đã chi tiêu', sortable: true, minWidth: 150 },
+  { key: 'threshold', label: 'Ngưỡng', sortable: true, minWidth: 150 }, // Cột cuối không cần width, nó sẽ tự lấp đầy
 ])
 
 const adAccounts = ref([

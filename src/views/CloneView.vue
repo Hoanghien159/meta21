@@ -130,7 +130,9 @@ function sortBy(key) {
 
 function deleteSelected() {
   if (confirm(`Bạn có chắc muốn xóa ${sharedSelectedIds.value.length} mục đã chọn?`)) {
-    cloneAccounts.value = cloneAccounts.value.filter((acc) => !sharedSelectedIds.value.includes(acc.id))
+    cloneAccounts.value = cloneAccounts.value.filter(
+      (acc) => !sharedSelectedIds.value.includes(acc.id),
+    )
     setSelectedIds([])
   }
 }

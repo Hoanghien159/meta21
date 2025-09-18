@@ -1,6 +1,13 @@
 <template>
-  <div class="container-fluid" style="display: flex; height: 100%; overflow: hidden; padding: 0; gap: 0">
-    <div class="main-content" id="mainContent" style="flex: 1; min-width: 0; display: flex; flex-direction: column;">
+  <div
+    class="container-fluid"
+    style="display: flex; height: 100%; overflow: hidden; padding: 0; gap: 0"
+  >
+    <div
+      class="main-content"
+      id="mainContent"
+      style="flex: 1; min-width: 0; display: flex; flex-direction: column"
+    >
       <!-- Slot for DataTable -->
       <slot name="datatable"></slot>
     </div>

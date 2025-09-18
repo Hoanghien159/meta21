@@ -93,21 +93,21 @@
                     >
                       <div class="mb-3 floating-input">
                         <label class="fw-bold mb-2">License Key</label>
-                        <input type="text" class="form-control" name="license" />
+                        <input type="text" class="form-control" name="license" v-model="license" />
                       </div>
 
                       <div class="mb-3 floating-input">
                         <label class="fw-bold mb-2">Cookie</label>
-                        <input type="text" class="form-control" id="cookie" />
+                        <input type="text" class="form-control" id="cookie" v-model="cookie" />
                       </div>
 
                       <div class="mb-3 floating-input">
                         <label class="fw-bold mb-2">Access Token</label>
-                        <input type="text" class="form-control" id="accessToken" />
+                        <input type="text" class="form-control" id="accessToken" v-model="accessToken" />
                       </div>
                       <div class="floating-input">
                         <label class="fw-bold mb-2">Token</label>
-                        <input type="text" class="form-control" id="accessToken2" />
+                        <input type="text" class="form-control" id="accessToken2" v-model="accessToken2" />
                       </div>
                     </div>
                     <div class="tab-pane" id="theme" role="tabpanel" style="min-height: 400px">
@@ -313,7 +313,10 @@
 
 <script setup>
 import { useTheme } from '@/composables/useTheme'
+import { useSettings } from '@/composables/useSettings'
+
 const { currentTheme, setTheme } = useTheme()
+const { license, cookie, accessToken, accessToken2 } = useSettings()
 </script>
 
 <style scoped>

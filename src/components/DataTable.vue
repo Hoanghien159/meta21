@@ -1,7 +1,5 @@
 <template>
-  <!-- prettier-ignore -->
   <div class="metric-card rounded-xl shadow-lg overflow-hidden d-flex flex-column h-100 position-relative" ref="tableWrapper">
-    <!-- Slot for filters -->
     <div
       v-if="$slots.filters || selectable"
       class="border-bottom dark-border d-flex justify-content-between align-items-center"
@@ -10,85 +8,90 @@
       <slot name="filters"></slot>
     </div>
 
-    <!-- Table Container -->
-    <div class="table-container custom-scrollbar flex-grow-1">
-      <table class="table table-hover mb-0">
-        <thead class="table-header">
-          <tr>
-            <th v-if="selectable" class="text-center" style="width: 50px">
-              <input
-                type="checkbox"
-                class="form-check-input"
-                :checked="areAllSelected"
-                @change="toggleSelectAllOnPage"
-              />
-            </th>
-            <th
-              v-for="(column, index) in columns"
-              :key="column.key"
-              scope="col"
-              class="text-start"
-              :style="{
-                width: columnWidths[column.key] ? `${columnWidths[column.key]}px` : 'auto',
-              }"
-              @click="column.sortable && $emit('sort', column.key)"
-              :class="{ sortable: column.sortable }"
-            >
-              <div class="d-flex align-items-center">
-                <slot :name="`header(${column.key})`" :column="column">
-                  <span>{{ column.label }}</span>
-                </slot>
-                <i
-                  v-if="sortKey === column.key"
-                  class="ri-arrow-down-s-line sort-icon ms-1"
-                  :class="{ asc: sortOrder === 'asc' }"
-                ></i>
-              </div>
-              <div class="resizer" @mousedown="startResize($event, index)"></div>
-            </th>
-          </tr>
-        </thead>
-        <tbody class="table-body">
-          <tr v-if="items.length === 0">
-            <td :colspan="columns.length + (selectable ? 1 : 0)" class="text-center py-4">
-              Chưa có dữ liệu.
-            </td>
-          </tr>
-          <tr
-            v-for="(item, index) in items"
-            :key="item.id || index"
-            class="align-middle"
-            @mousedown.left.prevent="handleRowMouseDown($event, item)"
-            @mouseover="handleRowMouseOver(item)"
-            @contextmenu.prevent="showContextMenu($event)"
-          >
-            <td v-if="selectable" class="text-center" :class="{ 'row-highlighted': highlightedRows.has(item.id) }">
-              <!-- prettier-ignore -->
-              <input
-                type="checkbox"
-                class="form-check-input"
-                :checked="sharedSelectedIds.includes(item.id)"
-                @change="toggleSelectItem(item)"
-              />
-            </td>
-            <td v-for="column in columns" :key="column.key" :class="{ 'row-highlighted': highlightedRows.has(item.id) }">
-              <!-- Slot for custom cell rendering -->
-              <slot
-                :name="`cell(${column.key})`"
-                :item="item"
-                :value="item[column.key]"
-                :index="index"
+    <div class="flex-grow-1 d-flex flex-column overflow-hidden">
+      <div class="table-container custom-scrollbar flex-grow-1">
+        <table
+          class="table table-hover mb-0"
+        >
+          <thead class="table-header">
+            <tr>
+              <th v-if="selectable" class="text-center" style="width:2px">
+                <input
+                  type="checkbox"
+                  class="form-check-input"
+                  :checked="areAllSelected"
+                  @change="toggleSelectAllOnPage"
+                />
+              </th>
+              <th
+                v-for="(column, index) in columns"
+                :key="column.key"
+                scope="col"
+                class="text-start"
+                :style="{
+                  width: (tempColumnWidths[column.key] || columnWidths[column.key]) && index < columns.length - 1 // Cột cuối cùng sẽ tự động co giãn
+                    ? `${tempColumnWidths[column.key] || columnWidths[column.key]}px`
+                    : 'auto',
+                  minWidth: column.minWidth ? `${column.minWidth}px` : (index === columns.length - 1 ? '100px' : '50px'),
+                  maxWidth: column.maxWidth ? `${column.maxWidth}px` : 'none',
+                }"
+                :class="{ sortable: column.sortable }"
               >
-                <!-- Default cell rendering -->
-                {{ item[column.key] }}
-              </slot>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+                <div
+                  class="d-flex align-items-center"
+                  @click="column.sortable && $emit('sort', column.key)"
+                >
+                  <slot :name="`header(${column.key})`" :column="column">
+                    <span>{{ column.label }}</span>
+                  </slot>
+                  <i
+                    v-if="sortKey === column.key"
+                    class="ri-arrow-down-s-line sort-icon ms-1"
+                    :class="{ asc: sortOrder === 'asc' }"
+                  ></i>
+                </div>
+                <div v-if="index < columns.length - 1" class="resizer" @mousedown.stop="startResize($event, index)"></div>
+              </th>
+            </tr>
+          </thead>
+          <tbody class="table-body">
+            <tr v-if="items.length === 0">
+              <td :colspan="columns.length + (selectable ? 1 : 0)" class="text-center py-4">
+                Chưa có dữ liệu.
+              </td>
+            </tr>
+            <tr
+              v-for="(item, index) in items"
+              :key="item.id || index"
+              class="align-middle"
+              @mousedown.left.prevent="handleRowMouseDown($event, item)"
+              @mouseover="handleRowMouseOver(item)"
+              @contextmenu.prevent="showContextMenu($event)"
+            >
+              <td v-if="selectable" class="text-center checkbox-cell" :class="{ 'row-highlighted': highlightedRows.has(item.id) }">
+                <input
+                  type="checkbox"
+                  class="form-check-input"
+                  :checked="sharedSelectedIds.includes(item.id)"
+                  @change="toggleSelectItem(item)"
+                />
+              </td>
+              <td v-for="column in columns" :key="column.key" :class="{ 'row-highlighted': highlightedRows.has(item.id) }">
+                <slot
+                  :name="`cell(${column.key})`"
+                  :item="item"
+                  :value="item[column.key]"
+                  :index="index"
+                >
+                  {{ item[column.key] }}
+                </slot>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
-    <!-- Context Menu -->
     <div
       v-if="contextMenu.visible"
       class="context-menu"
@@ -107,12 +110,10 @@
         }})
       </div>
     </div>
-    <!-- Footer -->
-    <div class="table-footer flex-wrap position-absolute bottom-0 start-0 end-0">
+    <div class="table-footer flex-wrap">
       <div class="d-flex align-items-center gap-3">
         <slot name="bulk-actions">
-          <!-- Bulk actions can be placed here -->
-        </slot>
+          </slot>
         <div v-if="selectable" class="text-sm footer-text ms-2">Đã chọn: {{ sharedSelectedIds.length }}</div>
         <div v-if="highlightedRows.size > 0" class="text-sm footer-text ms-3">
           Bôi đen: {{ highlightedRows.size }}
@@ -269,10 +270,16 @@ const contextMenu = ref({
   y: 0,
 })
 
-function getStatusClass(status) {
+const isResizing = ref(false)
+const startX = ref(0)
+const startWidth = ref(0)
+const activeColumnIndex = ref(-1)
+const tempColumnWidths = ref({})
+
+const getStatusClass = (status) => {
   // Trạng thái chung
   if (status === 'Hoạt động') return 'status-active'
-  if (status === 'Tạm dừng' || status === 'đóng hạn' || status === 'Lỗi') return 'status-inactive'
+  if (['Tạm dừng', 'đóng hạn', 'Lỗi'].includes(status)) return 'status-inactive'
   if (status === 'Đang xem xét') return 'status-leave'
   // Trạng thái của trang Clone
   if (status === 'Đã clone') return 'status-active'
@@ -288,7 +295,6 @@ function handleRowMouseDown(event, item) {
   hideContextMenu()
 
   if (event.shiftKey && lastClickedRowId.value) {
-    // Logic chọn với phím Shift
     const lastIndex = props.items.findIndex((i) => i.id === lastClickedRowId.value)
     const currentIndex = props.items.findIndex((i) => i.id === item.id)
     const start = Math.min(lastIndex, currentIndex)
@@ -304,17 +310,14 @@ function handleRowMouseDown(event, item) {
   } else {
     isDragging.value = true
     lastHoveredRowId.value = item.id
-    // Nếu không nhấn Ctrl (hoặc Cmd trên Mac), xóa các dòng đã bôi đen trước đó
     if (!event.ctrlKey && !event.metaKey) {
       highlightedRows.value.clear()
     }
-    highlightedRows.value.add(item.id)
     highlightedRows.value.clear()
     highlightedRows.value.add(item.id)
   }
 
   lastClickedRowId.value = item.id
-  // Thêm trình nghe sự kiện mouseup vào document để dừng việc kéo
   document.addEventListener('mouseup', handleMouseUp, { once: true })
 }
 
@@ -327,7 +330,6 @@ function handleRowMouseOver(item) {
 function handleMouseUp() {
   isDragging.value = false
   lastHoveredRowId.value = null
-  // Không xóa highlightedRows ở đây để có thể dùng cho context menu
 }
 
 function showContextMenu(event) {
@@ -336,7 +338,6 @@ function showContextMenu(event) {
     contextMenu.value.x = event.clientX
     contextMenu.value.y = event.clientY
   }
-  // Lắng nghe sự kiện click bên ngoài để đóng menu và xóa bôi đen
   document.addEventListener('click', handleClickOutside, { once: true })
 }
 const emit = defineEmits([
@@ -351,7 +352,6 @@ function goToPage(page) {
   if (!isNaN(pageNumber) && pageNumber >= 1 && pageNumber <= props.totalPages) {
     emit('update:currentPage', pageNumber)
   }
-  // Nếu người dùng nhập số trang không hợp lệ, có thể reset lại giá trị của input về trang hiện tại
 }
 
 function hideContextMenu() {
@@ -361,7 +361,6 @@ function handleClickOutside(event) {
   if (tableWrapper.value && !tableWrapper.value.contains(event.target)) {
     highlightedRows.value.clear()
   }
-  // Không xóa bôi đen ở đây nữa, chỉ xóa khi bắt đầu bôi đen mới.
 }
 
 function applySelection(mode) {
@@ -386,11 +385,8 @@ function updateSelection(itemId, mode) {
   setSelectedIds(Array.from(newSelected))
 }
 
-
-
 const areAllSelected = computed(() => {
   if (!props.items.length || !sharedSelectedIds.value.length) return false
-  // Chỉ kiểm tra các mục trên trang hiện tại
   return props.items.every((item) => sharedSelectedIds.value.includes(item.id))
 })
 
@@ -406,40 +402,60 @@ function toggleSelectItem(item) {
   updateSelection(item.id, sharedSelectedIds.value.includes(item.id) ? 'remove' : 'add')
 }
 
-const columnWidths = ref(props.columnWidths)
-const isResizing = ref(false)
-const startX = ref(0)
-const startWidth = ref(0)
-const activeColumnIndex = ref(-1)
-
+// Logic điều chỉnh kích thước cột đã được cập nhật
 const startResize = (event, index) => {
-  event.stopPropagation() // Ngăn sự kiện lan truyền lên thẻ <tr>
+  event.stopPropagation()
   isResizing.value = true
   activeColumnIndex.value = index
   const th = event.target.parentElement
   startX.value = event.clientX
   startWidth.value = th.offsetWidth
-  document.addEventListener('mousemove', handleMouseMove)
+  tempColumnWidths.value = { ...props.columnWidths } // Sao chép giá trị ban đầu
+  document.addEventListener('mousemove', handleMouseMove, { passive: true })
   document.addEventListener('mouseup', stopResize)
 }
 
 const handleMouseMove = (event) => {
   if (!isResizing.value) return
   const diffX = event.clientX - startX.value
-  const newWidth = startWidth.value + diffX
-  const columnKey = props.columns[activeColumnIndex.value].key
-  if (newWidth > 50) {
-    // Đặt chiều rộng tối thiểu
-    columnWidths.value[columnKey] = newWidth
-  }
+  let newWidth = startWidth.value + diffX
+  const column = props.columns[activeColumnIndex.value]
+
+  // Áp dụng minWidth và maxWidth
+  const minWidth = column.minWidth || 50
+  const maxWidth = column.maxWidth || Infinity
+  newWidth = Math.max(minWidth, Math.min(newWidth, maxWidth))
+
+  // Cập nhật chiều rộng tạm thời
+  tempColumnWidths.value[column.key] = newWidth
 }
 
-const stopResize = () => {
+const stopResize = (event) => {
+  if (!isResizing.value) return
   isResizing.value = false
+
+  if (activeColumnIndex.value !== -1) {
+    const columnKey = props.columns[activeColumnIndex.value].key
+    const column = props.columns[activeColumnIndex.value]
+    let finalWidth = startWidth.value + (event.clientX - startX.value)
+
+    const minWidth = column.minWidth || 50
+    const maxWidth = column.maxWidth || Infinity
+    finalWidth = Math.max(minWidth, Math.min(finalWidth, maxWidth))
+
+    // Phát ra sự kiện để cập nhật props chính thức
+    emit('update:columnWidths', {
+      ...props.columnWidths,
+      [columnKey]: finalWidth,
+    })
+
+  }
+
   activeColumnIndex.value = -1
+  tempColumnWidths.value = {}
+
   document.removeEventListener('mousemove', handleMouseMove)
   document.removeEventListener('mouseup', stopResize)
-  emit('update:columnWidths', { ...columnWidths.value })
 }
 
 onBeforeUnmount(() => {
@@ -460,10 +476,9 @@ onBeforeUnmount(() => {
 }
 
 .table-body td.row-highlighted {
-  background-color: rgba(13, 110, 253, 0.2) !important; /* Chỉ giữ lại màu nền mờ */
+  background-color: rgba(13, 110, 253, 0.2) !important;
   position: relative;
-  /* Nâng cao lớp của dòng được bôi đen để nó nổi lên trên các dòng khác */
-  z-index: 11; /* Phải cao hơn z-index của thead (10) */
+  z-index: 11;
 }
 
 .context-menu {

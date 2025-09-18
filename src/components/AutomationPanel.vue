@@ -1,6 +1,10 @@
 <template>
   <!-- Container cho Automation Panel và nút thu gọn -->
-  <div id="automation-container" :class="{ 'is-collapsed': isCollapsed }" style="position: relative; display: flex; align-items: flex-start;">
+  <div
+    id="automation-container"
+    :class="{ 'is-collapsed': isCollapsed }"
+    style="position: relative; display: flex; align-items: flex-start"
+  >
     <div class="fold-button" @click="togglePanel">
       <i :class="isCollapsed ? 'ri-arrow-left-line' : 'ri-arrow-right-line'"></i>
     </div>
@@ -152,8 +156,8 @@ function startAutomation() {
         // **VALIDATION LOGIC**
         // Kiểm tra các trường bắt buộc cho từng tính năng đang hoạt động
         if (feature.id === 'renameSettings' && !settings.newPageName) {
-            addToast('Vui lòng nhập tên mới cho tính năng "Đổi tên tài khoản"!', 'error');
-            return; // Dừng lại nếu thiếu thông tin
+          addToast('Vui lòng nhập tên mới cho tính năng "Đổi tên tài khoản"!', 'error')
+          return // Dừng lại nếu thiếu thông tin
         }
         // Thêm các kiểm tra khác cho các tính năng khác ở đây nếu cần
         // Ví dụ: if (feature.id === 'shareSettings' && !settings.shareId) { ... }
@@ -208,7 +212,7 @@ const unsubscribeEnd = onAutomation('end', handleAutomationEnd)
 
 onUnmounted(() => {
   unsubscribeEnd() // Hủy đăng ký lắng nghe sự kiện khi component bị hủy
-});
+})
 
 onMounted(() => {
   const inputs = document.querySelectorAll('.floating-input input')
@@ -472,7 +476,9 @@ input:checked + .slider:before {
   backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: -5px -5px 10px rgba(50, 58, 77, 0.5), 5px 5px 10px rgba(18, 21, 28, 0.5);
+  box-shadow:
+    -5px -5px 10px rgba(50, 58, 77, 0.5),
+    5px 5px 10px rgba(18, 21, 28, 0.5);
 }
 
 [data-bs-theme='dark'] .fold-button {

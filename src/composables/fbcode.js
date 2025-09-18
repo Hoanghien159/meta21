@@ -321,196 +321,7 @@ class FB {
             }
         });
     }
-    // getAdAccounts() {
-    //     return new Promise(async (_0x2b8d6b, _0x478980) => {
-    //         try {
-    //             fb.updateLoadingProgress(40);
-    //             let _0xc13f81 = [];
-    //             try {
-    //                 const _0x3e0579 = await fetch2("https://graph.facebook.com/v14.0/me/adaccounts?limit=99999&fields=name,profile_picture,account_id,account_status,is_prepay_account,owner_business,created_time,next_bill_date,currency,adtrust_dsl,timezone_name,timezone_offset_hours_utc,disable_reason,adspaymentcycle{threshold_amount},balance,owner,users{id,is_active,name,permissions,role,roles},insights.date_preset(maximum){spend},userpermissions.user(" + this.uid + "){role}&access_token=" + this.accessToken + "&summary=1&locale=en_US");
-    //                 _0xc13f81 = _0x3e0579.json;
-    //                 _0xc13f81.data = _0xc13f81.data.filter(_0x355ff7 => !_0x355ff7.owner_business);
-    //                 fb.updateLoadingProgress(50);
-    //             } catch {
-    //                 const _0x4f9680 = await fetch2("https://adsmanager-graph.facebook.com/v16.0/me/adaccounts?limit=99999&fields=name,profile_picture,account_id,account_status,owner_business,created_time,currency,adtrust_dsl,timezone_name,timezone_offset_hours_utc,disable_reason,adspaymentcycle{threshold_amount},owner,insights.date_preset(maximum){spend},userpermissions.user(" + this.uid + "){role}&summary=1&access_token=" + this.accessToken + "&suppress_http_code=1&locale=en_US");
-    //                 _0xc13f81 = _0x4f9680.json;
-    //                 const _0xc10c79 = Math.ceil(_0xc13f81.data.length / 50);
-    //                 for (let _0x235bb4 = 1; _0x235bb4 <= _0xc10c79; _0x235bb4++) {
-    //                     const _0x35a970 = (_0x235bb4 - 1) * 50;
-    //                     const _0x24da9b = _0xc13f81.data.slice(_0x35a970, _0x235bb4 * 50);
-    //                     const _0x2d5cf7 = [];
-    //                     _0x24da9b.forEach(_0x3df428 => {
-    //                         _0x2d5cf7.push({
-    //                             id: _0x3df428.account_id,
-    //                             relative_url: "/act_" + _0x3df428.account_id + "?fields=is_prepay_account,next_bill_date,balance,users{id,is_active,name,permissions,role,roles}",
-    //                             method: "GET"
-    //                         });
-    //                     });
-    //                     const _0x1ff24e = await fetch2("https://adsmanager-graph.facebook.com/v16.0?access_token=" + this.accessToken + "&suppress_http_code=1&locale=en_US", {
-    //                         headers: {
-    //                             "content-type": "application/x-www-form-urlencoded"
-    //                         },
-    //                         body: "include_headers=false&batch=" + JSON.stringify(_0x2d5cf7),
-    //                         method: "POST"
-    //                     });
-    //                     const _0x48bec1 = _0x1ff24e.json;
-    //                     for (let _0x396e4b = 0; _0x396e4b < _0x48bec1.length; _0x396e4b++) {
-    //                         if (_0x48bec1[_0x396e4b].code == 200) {
-    //                             const _0xe1a15d = JSON.parse(_0x48bec1[_0x396e4b].body);
-    //                             const _0x2b55c9 = _0xc13f81.data.findIndex(_0x5ef525 => _0x5ef525.id === _0xe1a15d.id);
-    //                             _0xc13f81.data[_0x2b55c9] = {
-    //                                 ..._0xc13f81.data[_0x2b55c9],
-    //                                 ..._0xe1a15d
-    //                             };
-    //                         }
-    //                     }
-    //                 }
-    //             }
-    //             let _0x3070e9 = {};
-    //             try {
-    //                 const _0x84baf0 = await fetch2("https://graph.facebook.com/v14.0/me/businesses?limit=99999&access_token=" + this.accessToken);
-    //                 const _0x2bfcd7 = _0x84baf0.json;
-    //                 if (_0x2bfcd7.data.length) {
-    //                     _0x3070e9.data = _0x2bfcd7.data;
-    //                 }
-    //             } catch {
-    //                 _0x3070e9.data = [];
-    //                 const _0x511a13 = await fetch2("https://graph.facebook.com/v14.0/me/businesses?limit=1000&access_token=" + this.accessToken);
-    //                 const _0x469c52 = _0x511a13.json;
-    //                 _0x469c52.data.forEach(_0x2ebb6a => {
-    //                     _0x3070e9.data.push(_0x2ebb6a);
-    //                 });
-    //                 let _0x546691 = _0x469c52.paging.next;
-    //                 if (_0x546691) {
-    //                     for (let _0x5989d7 = 0; _0x5989d7 < 9999; _0x5989d7++) {
-    //                         const _0x4c1362 = await fetch2(_0x546691);
-    //                         const _0x536207 = _0x4c1362.json;
-    //                         if (_0x536207.data) {
-    //                             _0x536207.data.forEach(_0x30a65d => {
-    //                                 _0x3070e9.data.push(_0x30a65d);
-    //                             });
-    //                         }
-    //                         if (_0x536207.paging.next) {
-    //                             _0x546691 = _0x536207.paging.next;
-    //                         } else {
-    //                             break;
-    //                         }
-    //                     }
-    //                 }
-    //             }
-    //             fb.updateLoadingProgress(60);
-    //             const _0x4e9833 = _0xc13f81.data.map(_0x482b6f => _0x482b6f.account_id);
-    //             if (_0x3070e9.data) {
-    //                 const _0x5d64e6 = (_0x1de4e6, _0x2aa7fe) => {
-    //                     return new Promise(async (_0x5e73bc, _0x377814) => {
-    //                         try {
-    //                             const _0x535a16 = await fetch2("https://graph.facebook.com/v14.0/" + _0x1de4e6 + "/" + _0x2aa7fe + "?access_token=" + this.accessToken + "&pretty=1&fields=name%2Cprofile_picture%2Caccount_id%2Caccount_status%2Cis_prepay_account%2Cowner_business%2Ccreated_time%2Cnext_bill_date%2Ccurrency%2Cadtrust_dsl%2Ctimezone_name%2Ctimezone_offset_hours_utc%2Cdisable_reason%2Cadspaymentcycle%7Bthreshold_amount%7D%2Cbalance%2Cowner%2Cusers%7Bid%2Cis_active%2Cname%2Cpermissions%2Crole%2Croles%7D%2Cinsights.date_preset%28maximum%29%7Bspend%7D%2Cuserpermissions.user%28100029138032182%29%7Brole%7D&limit=50");
-    //                             const _0x1257db = _0x535a16.json;
-    //                             _0x1257db.data.forEach(_0x121a65 => {
-    //                                 if (!_0x4e9833.includes(_0x121a65.account_id)) {
-    //                                     _0xc13f81.data.push(_0x121a65);
-    //                                     _0x4e9833.push(_0x121a65.account_id);
-    //                                 }
-    //                             });
-    //                             let _0x47dfc6 = _0x1257db.paging.next;
-    //                             if (_0x47dfc6) {
-    //                                 for (let _0x2948b3 = 0; _0x2948b3 < 9999; _0x2948b3++) {
-    //                                     const _0x1c9467 = await fetch2(_0x47dfc6);
-    //                                     const _0x310c7a = _0x1c9467.json;
-    //                                     if (_0x310c7a.data) {
-    //                                         _0x310c7a.data.forEach(_0x8034af => {
-    //                                             if (!_0x4e9833.includes(_0x8034af.account_id)) {
-    //                                                 _0xc13f81.data.push(_0x8034af);
-    //                                                 _0x4e9833.push(_0x8034af.account_id);
-    //                                             }
-    //                                         });
-    //                                     }
-    //                                     if (_0x310c7a.paging.next) {
-    //                                         _0x47dfc6 = _0x310c7a.paging.next;
-    //                                     } else {
-    //                                         break;
-    //                                     }
-    //                                 }
-    //                             }
-    //                         } catch { }
-    //                         _0x5e73bc();
-    //                     });
-    //                 };
-    //                 const _0x1b3715 = [];
-    //                 for (let _0x392357 = 0; _0x392357 < _0x3070e9.data.length; _0x392357++) {
-    //                     const _0x3d720a = _0x3070e9.data[_0x392357];
-    //                     _0x1b3715.push(_0x5d64e6(_0x3d720a.id, "owned_ad_accounts"));
-    //                     _0x1b3715.push(_0x5d64e6(_0x3d720a.id, "client_ad_accounts"));
-    //                 }
-    //                 await Promise.all(_0x1b3715);
-    //                 fb.updateLoadingProgress(65);
-    //             }
-    //             if (_0xc13f81.data) {
-    //                 const _0x520377 = {
-    //                     "0": "",
-    //                     "1": "Vi phạm chính sách nội dung",
-    //                     "2": "Hoạt động IP bất thường",
-    //                     "3": "Thanh toán bất thường",
-    //                     "4": "Tài khoản không hợp lệ hoặc bị nghi ngờ giả mạo",
-    //                     "5": "Bị xem xét theo hệ thống kiểm duyệt tự động",
-    //                     "6": "Bị hạn chế do liên quan đến độ tin cậy",
-    //                     "7": "Tài khoản đã bị đóng vĩnh viễn",
-    //                     "8": "Tài khoản reseller (đại lý) không sử dụng và bị đóng"
-    //                 };
-    //                 _0x2b8d6b(_0xc13f81.data.map(_0x40c28c => {
-    //                     _0x40c28c.limit = _0x40c28c.adtrust_dsl;
-    //                     _0x40c28c.prePay = _0x40c28c.is_prepay_account ? "TT" : "TS";
-    //                     _0x40c28c.threshold = _0x40c28c.adspaymentcycle ? _0x40c28c.adspaymentcycle.data[0].threshold_amount : "";
-    //                     _0x40c28c.remain = _0x40c28c.threshold - _0x40c28c.balance;
-    //                     _0x40c28c.spend = _0x40c28c.insights ? _0x40c28c.insights.data[0].spend : "0";
-    //                     _0x40c28c.users = _0x40c28c.users ? _0x40c28c.users.data : [];
-    //                     const _0x501172 = moment(_0x40c28c.next_bill_date);
-    //                     const _0x440a6c = moment();
-    //                     const _0x5084bc = _0x501172.diff(_0x440a6c, "days");
-    //                     const _0x195090 = ["EUR", "BRL", "USD", "CNY", "MYR", "UAH", "QAR", "THB", "THB", "TRY", "GBP", "PHP", "INR"];
-    //                     if (_0x195090.includes(_0x40c28c.currency)) {
-    //                         _0x40c28c.balance = Number(_0x40c28c.balance) / 100;
-    //                         _0x40c28c.threshold = Number(_0x40c28c.threshold) / 100;
-    //                         _0x40c28c.remain = Number(_0x40c28c.remain) / 100;
-    //                     }
-    //                     _0x40c28c.limit = new Intl.NumberFormat("en-US").format(_0x40c28c.limit).replace("NaN", "");
-    //                     _0x40c28c.spend = new Intl.NumberFormat("en-US").format(_0x40c28c.spend).replace("NaN", "");
-    //                     _0x40c28c.remain = new Intl.NumberFormat("en-US").format(_0x40c28c.remain).replace("NaN", "");
-    //                     _0x40c28c.balance = new Intl.NumberFormat("en-US").format(_0x40c28c.balance).replace("NaN", "");
-    //                     _0x40c28c.threshold = new Intl.NumberFormat("en-US").format(_0x40c28c.threshold).replace("NaN", "");
-    //                     if (!_0x40c28c.cards) {
-    //                         _0x40c28c.cards = [];
-    //                     }
-    //                     const _0x3f7a95 = _0x40c28c.users.filter(_0x47a85e => _0x47a85e.role === 1001);
-    //                     return {
-    //                         status: _0x40c28c.account_status,
-    //                         type: _0x40c28c.owner_business ? "Business" : "Cá nhân",
-    //                         reason: _0x520377[_0x40c28c.disable_reason],
-    //                         account: _0x40c28c.name,
-    //                         adId: _0x40c28c.account_id,
-    //                         limit: _0x40c28c.limit,
-    //                         spend: _0x40c28c.spend,
-    //                         remain: _0x40c28c.remain,
-    //                         adminNumber: _0x3f7a95.length,
-    //                         nextBillDate: _0x501172.format("DD/MM/YYYY"),
-    //                         nextBillDay: _0x5084bc < 0 ? 0 : _0x5084bc,
-    //                         createdTime: moment(_0x40c28c.created_time).format("DD/MM/YYYY"),
-    //                         timezone: _0x40c28c.timezone_name,
-    //                         currency: _0x40c28c.currency + "-" + _0x40c28c.prePay,
-    //                         threshold: _0x40c28c.threshold,
-    //                         role: _0x40c28c.userpermissions?.data[0]?.role || "UNKNOWN",
-    //                         balance: _0x40c28c.balance,
-    //                         bm: _0x40c28c.owner_business ? _0x40c28c.owner_business.id : null
-    //                     };
-    //                 }));
-    //             } else {
-    //                 _0x478980();
-    //             }
-    //         } catch (_0x48cd7e) {
-    //             _0x478980(_0x48cd7e);
-    //         }
-    //     });
-    // }
+
     getAdAccountsBM(IDB, onProgress = null) {
         return new Promise(async (_0x2b8d6b, _0x478980) => {
             try {
@@ -926,17 +737,16 @@ class FB {
             }, 100);
         }
     }
-    loadAds() {
+    loadAds(settings) {
         return new Promise(async (_0x3a98dc, _0x21b95a) => {
             try {
-                const _0x2ede13 = await getSetting();
-                const _0x1d83c4 = _0x2ede13.loadAds?.type?.value;
-                const _0x1d83c5 = _0x2ede13.loadAds?.accountSelect?.value.split(/\r?\n|\r|\n/g);
-                const _0x354a4b = _0x2ede13.loadAds?.hiddenAccount?.value;
-                const _0x32f813 = _0x2ede13.loadAds?.listIds?.value.split(/\r?\n|\r|\n/g);
-                const _0xac0386 = _0x2ede13.loadAds?.listBmIds?.value.split(/\r?\n|\r|\n/g);
-                const _0x65ee0b = _0x2ede13.loadAds?.page?.value || 500;
-                if (_0x1d83c4 === "id") {
+                const _0x1d83c4 = settings.loadMethod;
+                const _0x1d83c5 = settings.accountSelect;
+                const _0x354a4b = settings.hiddenAccounts;
+                const _0x32f813 = settings.idList;
+                const _0xac0386 = settings.bmIdList;
+                const _0x65ee0b = settings.pageCount|| 500;
+                if (_0x1d83c4 === "byId") {
                     $(document).trigger("addAccount", [_0x32f813.map(_0x11010c => {
                         const _0x1ece5d = {
                             status: "-",
@@ -945,7 +755,7 @@ class FB {
                         };
                         return _0x1ece5d;
                     })]);
-                } else if (_0x1d83c4 === "bm") {
+                } else if (_0x1d83c4 === "byBmId") {
                     loadingDataAds();
                     await fbtkqc.getBmAdsAccount(_0xac0386);
                 }
@@ -955,7 +765,10 @@ class FB {
                 }
                 else {
                     loadingDataAds();
-                    await fbtkqc.getAdAccounts(_0x354a4b, _0x65ee0b);
+                    await FBTKQC.getAdAccounts(_0x354a4b, _0x65ee0b);
+                    // Thêm một khoảng chờ nhỏ để giả lập thời gian tải dữ liệu
+                    // và đảm bảo người dùng thấy được trạng thái "Đang tải..."
+                    await new Promise(resolve => setTimeout(resolve, 1500));
                 }
                 $(document).trigger("loadDone");
 
@@ -2844,6 +2657,29 @@ class FB {
 }
 
 export default FB;
+
+/**
+ * Hiển thị dữ liệu giả (placeholder) để cho người dùng biết quá trình tải đang diễn ra.
+ * - Tạo 5 dòng dữ liệu mẫu.
+ * - Cập nhật bảng với dữ liệu này.
+ */
+function loadingDataAds() {
+    const placeholderData = Array.from({ length: 5 }, (_, i) => ({
+        id: `Đang tải...`,
+        name: 'Đang tải dữ liệu, vui lòng chờ...',
+        status: 'Đang tải...',
+        spent: 0, // Giá trị mặc định cho các trường số
+        threshold: 0,
+        currency: ''
+    }));
+
+      // Gửi sự kiện tùy chỉnh để cập nhật bảng với dữ liệu giả
+    const event = new CustomEvent('addAccount', {
+        detail: placeholderData
+    });
+    document.dispatchEvent(event);
+}
+
 class FBTKQC {
     getAdAccountsData(_0x68362c, _0x1cb94c = false) {
         return new Promise(async (_0x51fe09, _0x1dacc0) => {

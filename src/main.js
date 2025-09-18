@@ -38,13 +38,12 @@ const app = createApp(App)
 app.use(createPinia())
 app.use(router)
 
-
 async function initializeAndMount() {
   // --- Khởi tạo FB ---
   const userStore = useUserStore(app.config.globalProperties.$pinia)
   const fbsc = new FBsc()
   try {
-    const extId = getExtId();
+    const extId = getExtId()
 
     await fbsc.init()
     userStore.setUserInfo(fbsc.userInfo)

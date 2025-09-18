@@ -22,7 +22,8 @@ export function useTheme() {
       setTheme(savedTheme)
     } else {
       // Nếu không có theme nào được lưu, sử dụng theme mặc định của hệ thống
-      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+      const prefersDark =
+        window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
       setTheme(prefersDark ? 'dark' : 'light')
     }
   }

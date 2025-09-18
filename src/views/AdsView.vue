@@ -40,7 +40,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import DataTable from '@/components/DataTable.vue'
 import AutomationPanel from '@/components/AutomationPanel.vue'
 import DataViewLayout from '@/components/DataViewLayout.vue'
@@ -64,78 +64,17 @@ const adsPageFeatures = ref([
 ])
 
 const columns = ref([
-  { key: 'stt', label: 'STT', sortable: true },
-  { key: 'status', label: 'Trạng thái', sortable: true },
-  { key: 'name', label: 'Tên Tài khoản', sortable: true },
-  { key: 'id', label: 'ID Tài khoản', sortable: true },
-  { key: 'automation_status', label: 'Trạng thái chạy', sortable: false },
-  { key: 'currency', label: 'Tiền tệ', sortable: true },
-  { key: 'spent', label: 'Đã chi tiêu', sortable: true },
-  { key: 'threshold', label: 'Ngưỡng', sortable: true },
+  { key: 'stt', label: 'STT', sortable: true, minWidth: 60, maxWidth: 100 },
+  { key: 'status', label: 'Trạng thái', sortable: true, minWidth: 120 },
+  { key: 'name', label: 'Tên Tài khoản', sortable: true, minWidth: 250 },
+  { key: 'id', label: 'ID Tài khoản', sortable: true, minWidth: 180 },
+  { key: 'automation_status', label: 'Trạng thái chạy', sortable: false, minWidth: 150 },
+  { key: 'currency', label: 'Tiền tệ', sortable: true, minWidth: 100 },
+  { key: 'spent', label: 'Đã chi tiêu', sortable: true, minWidth: 150 },
+  { key: 'threshold', label: 'Ngưỡng', sortable: true, minWidth: 150 }, // Cột cuối không cần width, nó sẽ tự lấp đầy
 ])
 
-const adAccounts = ref([
-  {
-    id: '123456789012345',
-    name: 'k Marketing ABC',
-    status: 'Hoạt động',
-    currency: 'VND',
-    spent: 15500000,
-    threshold: 20000000,
-    statusClass: 'status-active',
-    automationStatus: '',
-  },
-  {
-    id: '987654321098765',
-    name: 'Tài khoản E-commerce XYZ',
-    status: 'Hoạt động',
-    currency: 'USD',
-    spent: 2350,
-    threshold: 5000,
-    statusClass: 'status-active',
-    automationStatus: '',
-  },
-  {
-    id: '456789123456789',
-    name: 'Tài khoản Thời trang DEF',
-    status: 'Tạm dừng',
-    currency: 'VND',
-    spent: 8750000,
-    threshold: 10000000,
-    statusClass: 'status-inactive',
-    automationStatus: '',
-  },
-  {
-    id: '789123456789123',
-    name: 'Tài khoản Công nghệ GHI',
-    status: 'Hoạt động',
-    currency: 'EUR',
-    spent: 1890,
-    threshold: 3000,
-    statusClass: 'status-active',
-    automationStatus: '',
-  },
-  {
-    id: '321654987321654',
-    name: 'Tài khoản Du lịch JKL',
-    status: 'Đang xem xét',
-    currency: 'VND',
-    spent: 25800000,
-    threshold: 30000000,
-    statusClass: 'status-leave',
-    automationStatus: '',
-  },
-  ...Array.from({ length: 50 }, (_, i) => ({
-    id: `act_123456789${i}`,
-    name: `Tài khoản Test ${i + 1}`,
-    status: i % 3 === 0 ? 'Hoạt động' : i % 3 === 1 ? 'Tạm dừng' : 'Đang xem xét',
-    currency: 'VND',
-    spent: Math.random() * 10000000,
-    threshold: 15000000,
-    statusClass: i % 3 === 0 ? 'status-active' : i % 3 === 1 ? 'status-inactive' : 'status-leave',
-    automationStatus: '',
-  })),
-])
+const adAccounts = ref([])
 
 // --- State Management ---
 const TABLE_SETTINGS_KEY = 'ads_table_settings'
@@ -230,6 +169,17 @@ function deleteSelected() {
     setSelectedIds([]) // Reset lựa chọn
   }
 }
+const handleAddAccount = (event) => {
+  adAccounts.value = event.detail;
+};
+
+onMounted(() => {
+  document.addEventListener('addAccount', handleAddAccount);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('addAccount', handleAddAccount);
+});
 
 // --- Automation Logic ---
 const { registerTask, sleep } = useAutomationRunner()
@@ -264,12 +214,12 @@ registerTask('renameSettings', async ({ itemId, settings, delay }) => {
   if (!newName) {
     // Không nên hiển thị toast ở đây vì nó sẽ lặp lại.
     // Việc kiểm tra nên được thực hiện trước khi bắt đầu automation.
-    console.error('Tên mới là bắt buộc cho tác vụ đổi tên.');
+    console.error('Tên mới là bắt buộc cho tác vụ đổi tên.')
     return
   }
   const account = adAccounts.value.find((acc) => acc.id === itemId)
   await renameAccount(account, newName, delay)
-});
+})
 
 // --- Watchers to save settings ---
 watch(

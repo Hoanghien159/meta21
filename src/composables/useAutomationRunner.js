@@ -20,7 +20,9 @@ export function initAutomationRunner() {
     emitAutomation('running', true)
     const { selectedIds, features, threads, delay } = payload
 
-    console.log(`Bắt đầu chạy ${features.length} tác vụ trên ${selectedIds.length} mục với ${threads} luồng...`)
+    console.log(
+      `Bắt đầu chạy ${features.length} tác vụ trên ${selectedIds.length} mục với ${threads} luồng...`,
+    )
 
     for (const feature of features) {
       const handler = taskHandlers.value[feature.id]
