@@ -79,7 +79,11 @@
                   @change="toggleSelectItem(item)"
                 />
               </td>
-              <td v-for="column in columns" :key="column.key" :class="{ 'row-highlighted': highlightedRows.has(item.id) }">
+              <td
+                v-for="column in columns"
+                :key="column.key"
+                :class="{ 'row-highlighted': highlightedRows.has(item.id) }"
+                :title="item[column.key]">
                 <slot
                   :name="`cell(${column.key})`"
                   :item="item"

@@ -96,6 +96,7 @@ const isLoading = ref(false)
 
 // --- State Management ---
 const TABLE_SETTINGS_KEY = 'ads_table_settings'
+const TABLE_DATA_KEY = 'ads_table_data' // Khóa mới để lưu dữ liệu bảng
 
 function loadSettings() {
   const saved = localStorage.getItem(TABLE_SETTINGS_KEY)
@@ -130,7 +131,9 @@ const defaultColumnWidths = {
 
 const { sharedSelectedIds, setSelectedIds } = useSelection()
 
-const { loadData } = usePageReloader()
+const { loadData, showModal } = usePageReloader()
+const { addToast } = useToast()
+
 const settings = ref(loadSettings())
 
 const statusFilter = ref(settings.value.statusFilter || '')
@@ -148,6 +151,7 @@ const handleLoadData = async (settingsFromModal) => {
     const data = await loadData('ads', settingsFromModal)
     if (data) {
       adAccounts.value = data
+      localStorage.setItem(TABLE_DATA_KEY, JSON.stringify(data)) // Lưu dữ liệu vào localStorage
     }
   } catch (error) {
     console.error('Lỗi khi tải dữ liệu từ AdsView:', error)
@@ -158,9 +162,16 @@ const handleLoadData = async (settingsFromModal) => {
 }
 
 onMounted(() => {
-  // Tải dữ liệu lần đầu khi component được tạo
-  // Sử dụng cài đặt mặc định hoặc từ localStorage nếu có
-  handleLoadData(settings.value.reloadSettings || { loadMethod: 'all' })
+  // Thử tải dữ liệu từ localStorage trước
+  const savedData = localStorage.getItem(TABLE_DATA_KEY)
+  if (savedData && JSON.parse(savedData).length > 0) {
+    adAccounts.value = JSON.parse(savedData)
+    addToast('Đã tải dữ liệu tài khoản từ phiên làm việc trước.', 'info')
+  } else {
+    // Nếu không có dữ liệu đã lưu, tự động mở modal để người dùng tải dữ liệu mới
+    addToast('Không tìm thấy dữ liệu đã lưu. Vui lòng tải dữ liệu mới.', 'info')
+    showModal('ads')
+  }
 })
 
 // --- Computed Properties ---
