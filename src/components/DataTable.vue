@@ -327,13 +327,17 @@ function handleRowMouseDown(event, item) {
       highlightedRows.value.add(props.items[i].id)
     }
   } else {
+    // Bắt đầu kéo chuột
     isDragging.value = true
     lastHoveredRowId.value = item.id
+
+    // Nếu không giữ phím Ctrl/Cmd, xóa các dòng đã bôi đen trước đó
     if (!event.ctrlKey && !event.metaKey) {
       highlightedRows.value.clear()
     }
-    highlightedRows.value.clear()
-    highlightedRows.value.add(item.id)
+
+    // Thêm hoặc xóa dòng hiện tại khỏi danh sách bôi đen
+    highlightedRows.value.has(item.id) ? highlightedRows.value.delete(item.id) : highlightedRows.value.add(item.id)
   }
 
   lastClickedRowId.value = item.id

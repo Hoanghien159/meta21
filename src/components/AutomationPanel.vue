@@ -88,6 +88,10 @@ const props = defineProps({
     type: Array,
     required: true,
   },
+  itemsOnPage: {
+    type: Array,
+    default: () => [],
+  },
 })
 
 const { emit: emitAutomation, on: onAutomation } = useAutomation()
@@ -177,12 +181,20 @@ function startAutomation() {
     return
   }
 
+  // Sắp xếp lại các ID đã chọn theo thứ tự xuất hiện trên trang hiện tại
+  const sortedSelectedIds = props.itemsOnPage
+    .map((item) => item.id)
+    .filter((id) => sharedSelectedIds.value.includes(id))
+
+  // Nếu không có mục nào được chọn trên trang hiện tại, sử dụng danh sách gốc (mặc dù trường hợp này ít xảy ra nếu có validation)
+  const finalSelectedIds = sortedSelectedIds.length > 0 ? sortedSelectedIds : sharedSelectedIds.value
+
   startBtn.style.display = 'none'
   stopBtn.style.display = 'flex'
 
   // Đây là nơi bạn có thể truy cập các dòng đã chọn
   const payload = {
-    selectedIds: sharedSelectedIds.value,
+    selectedIds: finalSelectedIds,
     features: activeFeatures,
     threads: parseInt(threads, 10),
     delay: parseInt(delay, 10),

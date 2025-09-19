@@ -35,7 +35,7 @@
       </DataTable>
     </template>
     <template #automation-panel>
-      <AutomationPanel :features="adsPageFeatures" />
+      <AutomationPanel :features="adsPageFeatures" :items-on-page="paginatedAccounts" />
     </template>
   </DataViewLayout>
 </template>
