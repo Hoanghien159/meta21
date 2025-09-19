@@ -1,11 +1,12 @@
 <template>
   <DataViewLayout>
     <template #datatable>
-      <ReloadModals modal-type="ads" />
+      <ReloadModals modal-type="ads" @load-data="handleLoadData" />
       <!-- prettier-ignore -->
       <DataTable :columns="columns" :items="paginatedAccounts" :total-items="filteredAccounts.length" :sort-key="sortKey"
-        :sort-order="sortOrder" @sort="sortBy" selectable v-model:current-page="currentPage"
-        v-model:items-per-page="itemsPerPage" :total-pages="totalPages" :column-widths="columnWidths" @reset-widths="resetColumnWidths"
+        :sort-order="sortOrder" @sort="sortBy" selectable v-model:current-page="currentPage" :is-loading="isLoading"
+        v-model:items-per-page="itemsPerPage" :total-pages="totalPages" :column-widths="columnWidths"
+        @reset-widths="resetColumnWidths"
         @update:column-widths="columnWidths = $event" :status-counts="statusCounts" v-model:status-filter="statusFilter" @click.stop>
         <template #cell(stt)="{ item }"> {{ item.stt }} </template>
         <template #cell(name)="{ item }">
@@ -40,14 +41,16 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import DataTable from '@/components/DataTable.vue'
 import AutomationPanel from '@/components/AutomationPanel.vue'
 import DataViewLayout from '@/components/DataViewLayout.vue'
 import { useSelection } from '@/composables/useSelection'
 import ReloadModals from '@/components/ReloadModals.vue'
 import { useAutomationRunner } from '@/composables/useAutomationRunner'
+import { usePageReloader } from '@/composables/usePageReloader'
 import { useToast } from '@/composables/useToast'
+import { useSettings } from '@/composables/useSettings'
 
 const adsPageFeatures = ref([
   {
@@ -89,6 +92,7 @@ const columns = ref([
 ])
 
 const adAccounts = ref([])
+const isLoading = ref(false)
 
 // --- State Management ---
 const TABLE_SETTINGS_KEY = 'ads_table_settings'
@@ -126,6 +130,7 @@ const defaultColumnWidths = {
 
 const { sharedSelectedIds, setSelectedIds } = useSelection()
 
+const { loadData } = usePageReloader()
 const settings = ref(loadSettings())
 
 const statusFilter = ref(settings.value.statusFilter || '')
@@ -134,6 +139,29 @@ const sortOrder = ref(settings.value.sortOrder || 'desc')
 const currentPage = ref(settings.value.currentPage || 1)
 const itemsPerPage = ref(settings.value.itemsPerPage || 10)
 const columnWidths = ref(settings.value.columnWidths || { ...defaultColumnWidths })
+
+const handleLoadData = async (settingsFromModal) => {
+  isLoading.value = true
+  adAccounts.value = [] // Xóa dữ liệu cũ
+  try {
+    // Truyền modal-type là 'ads'
+    const data = await loadData('ads', settingsFromModal)
+    if (data) {
+      adAccounts.value = data
+    }
+  } catch (error) {
+    console.error('Lỗi khi tải dữ liệu từ AdsView:', error)
+    // Toast đã được hiển thị trong fbcode.js
+  } finally {
+    isLoading.value = false
+  }
+}
+
+onMounted(() => {
+  // Tải dữ liệu lần đầu khi component được tạo
+  // Sử dụng cài đặt mặc định hoặc từ localStorage nếu có
+  handleLoadData(settings.value.reloadSettings || { loadMethod: 'all' })
+})
 
 // --- Computed Properties ---
 
@@ -202,25 +230,6 @@ function deleteSelected() {
     setSelectedIds([]) // Reset lựa chọn
   }
 }
-const handleAddAccount = (event) => {
-  // Dữ liệu có thể đến từng phần, nên chúng ta cần nối vào mảng hiện có
-  // hoặc thay thế hoàn toàn tùy vào logic
-  if (Array.isArray(event.detail)) {
-      // Xóa dữ liệu placeholder "Đang tải..." trước khi thêm dữ liệu thật
-      if (adAccounts.value.some(acc => acc.id === 'Đang tải...')) {
-          adAccounts.value = [];
-      }
-      adAccounts.value = [...adAccounts.value, ...event.detail];
-  }
-};
-
-onMounted(() => {
-  document.addEventListener('addAccount', handleAddAccount);
-});
-
-onUnmounted(() => {
-  document.removeEventListener('addAccount', handleAddAccount);
-});
 
 // --- Automation Logic ---
 const { registerTask, sleep } = useAutomationRunner()

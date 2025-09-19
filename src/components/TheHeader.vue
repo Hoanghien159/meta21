@@ -49,7 +49,7 @@
 
       <!-- Settings Button -->
 
-      <div class="d-flex align-items-center gap-2">
+      <div class="d-flex align-items-center gap-2" @click.stop>
         <button class="btn btn-secondary fw-bold shadow-sm settings-btn" @click="reloadPage">
           <i class="ri-refresh-line me-1"></i> Tải lại
         </button>

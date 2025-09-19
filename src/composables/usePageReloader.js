@@ -22,21 +22,23 @@ export function usePageReloader() {
     activeModal.value = null
   }
 
-  const loadData = async (settings) => {
-    console.log(`Đang tải dữ liệu cho modal: ${activeModal.value} với cài đặt:`, settings)
+  const loadData = async (modalType, settings) => {
+    console.log(`Đang tải dữ liệu cho modal: ${modalType} với cài đặt:`, settings)
 
-    addToast(`Bắt đầu tải dữ liệu cho ${activeModal.value.toUpperCase()}...`, 'info')
-    if (activeModal.value === 'ads') {
-      await fb.loadAds(settings)
+    addToast(`Bắt đầu tải dữ liệu cho ${modalType.toUpperCase()}...`, 'info')
+    if (modalType === 'ads') {
+      const data = await fb.loadAds(settings)
       addToast('Dữ liệu quảng cáo đã được tải lại thành công!', 'success')
-    } else if (activeModal.value === 'bm') {
+      closeModal()
+      return data
+    } else if (modalType === 'bm') {
       addToast('Dữ liệu Business Manager đã được tải lại thành công!', 'success')
     } else {
       addToast('Không xác định modal để tải dữ liệu.', 'error')
     }
 
-    // Tùy chọn: hiển thị progress bar và đóng popup sau khi hoàn tất
     closeModal()
+    return null
   }
 
   const reloadPage = () => {

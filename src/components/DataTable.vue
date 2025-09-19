@@ -53,8 +53,13 @@
             </tr>
           </thead>
           <tbody class="table-body">
-            <tr v-if="items.length === 0">
+            <tr v-if="isLoading">
               <td :colspan="columns.length + (selectable ? 1 : 0)" class="text-center py-4">
+                <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
+              </td>
+            </tr>
+            <tr v-if="items.length === 0">
+              <td v-if="!isLoading" :colspan="columns.length + (selectable ? 1 : 0)" class="text-center py-4">
                 Chưa có dữ liệu.
               </td>
             </tr>
@@ -235,6 +240,10 @@ const props = defineProps({
     default: 'desc',
   },
   selectable: {
+    type: Boolean,
+    default: false,
+  },
+  isLoading: {
     type: Boolean,
     default: false,
   },

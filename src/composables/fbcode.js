@@ -978,46 +978,23 @@ class FB {
     }
   }
   loadAds(settings) {
-    return new Promise(async (_0x3a98dc, _0x21b95a) => {
+    return new Promise(async (resolve, reject) => {
       try {
-        const _0x1d83c4 = settings.loadMethod
-        const _0x1d83c5 = settings.accountSelect
-        const _0x354a4b = settings.hiddenAccounts
-        const _0x32f813 = settings.idList
-        const _0xac0386 = settings.bmIdList
-        const _0x65ee0b = settings.pageCount || 500
-        if (_0x1d83c4 === 'byId') {
-          $(document).trigger('addAccount', [
-            _0x32f813.map((_0x11010c) => {
-              const _0x1ece5d = {
-                status: '-',
-                account: 'Unknown',
-                adId: _0x11010c,
-              }
-              return _0x1ece5d
-            }),
-          ])
-        } else if (_0x1d83c4 === 'byBmId') {
-          loadingDataAds()
-          await fbtkqc.getBmAdsAccount(_0xac0386)
-        } else if (_0x1d83c4 === 'bmlist') {
-          loadingDataAds()
-          await fbtkqc.getBmAdsAccount(_0x1d83c5)
-        } else {
-          loadingDataAds()
-          const accounts = await fbtkqc.getAdAccounts(_0x354a4b, _0x65ee0b)
-          const event = new CustomEvent('addAccount', { detail: accounts })
-          document.dispatchEvent(event)
-          // Thêm một khoảng chờ nhỏ để giả lập thời gian tải dữ liệu
-          // và đảm bảo người dùng thấy được trạng thái "Đang tải..."
-          await new Promise((resolve) => setTimeout(resolve, 1500))
-        }
+        const loadMethod = settings.loadMethod
+        const hiddenAccounts = settings.hiddenAccounts
+        const pageCount = settings.pageCount || 500
+        const idList = settings.idList || []
+        const bmIdList = settings.bmIdList || []
 
-        const doneEvent = new CustomEvent('loadDone')
-        document.dispatchEvent(doneEvent)
-        _0x3a98dc()
-      } catch (_0x3cc1a8) {
-        console.log(_0x3cc1a8)
+        // Hiện tại, chúng ta sẽ tập trung vào luồng chính là tải tất cả tài khoản.
+        // Bạn có thể mở rộng các trường hợp `byId`, `byBmId` sau này nếu cần.
+        loadingDataAds() // Hiển thị placeholder "Đang tải..."
+        const accounts = await fbtkqc.getAdAccounts(hiddenAccounts, pageCount)
+        resolve(accounts) // Trả về dữ liệu tài khoản
+      } catch (error) {
+        console.error('Lỗi trong loadAds:', error)
+        addToast(`Lỗi khi tải dữ liệu quảng cáo: ${error.message}`, 'error')
+        reject(error)
       }
     })
   }
@@ -3775,17 +3752,18 @@ export class FBTKQC {
           }
         }
         // Resolve promise với dữ liệu đã được định dạng
-        _0x4a6c72(
-          allAccounts.map((acc) => {
-            const { statusText, statusClass } = getAccountStatusInfo(acc.account_status)
-            return {
-              id: acc.account_id,
-              name: acc.name || 'Không có tên',
-              status: statusText,
-              statusClass: statusClass,
-            }
-          }),
-        )
+        const formattedAccounts = allAccounts.map((acc) => {
+          const { statusText, statusClass } = getAccountStatusInfo(acc.account_status)
+          return {
+            id: acc.account_id,
+            name: acc.name || 'Không có tên',
+            status: statusText,
+            statusClass: statusClass,
+            // Bổ sung các trường mặc định để cột hiển thị, tránh lỗi undefined
+            spent: 0, threshold: 0, currency: '',
+          }
+        })
+        _0x4a6c72(formattedAccounts)
       } catch (err) {
         addToast(`❌ Lỗi khi tải tài khoản: ${err.message || err}`, 'error')
         _0x4e5170(err)
