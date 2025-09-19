@@ -5,7 +5,7 @@
       <!-- prettier-ignore -->
       <DataTable :columns="columns" :items="paginatedAccounts" :total-items="filteredAccounts.length" :sort-key="sortKey"
         :sort-order="sortOrder" @sort="sortBy" selectable v-model:current-page="currentPage"
-        v-model:items-per-page="itemsPerPage" :total-pages="totalPages" :column-widths="columnWidths"
+        v-model:items-per-page="itemsPerPage" :total-pages="totalPages" :column-widths="columnWidths" @reset-widths="resetColumnWidths"
         @update:column-widths="columnWidths = $event" :status-counts="statusCounts" v-model:status-filter="statusFilter" @click.stop>
         <template #cell(stt)="{ item }"> {{ item.stt }} </template>
         <template #cell(name)="{ item }">
@@ -66,12 +66,26 @@ const adsPageFeatures = ref([
 const columns = ref([
   { key: 'stt', label: 'STT', sortable: true, minWidth: 60, maxWidth: 100 },
   { key: 'status', label: 'Trạng thái', sortable: true, minWidth: 120 },
-  { key: 'name', label: 'Tên Tài khoản', sortable: true, minWidth: 250 },
-  { key: 'id', label: 'ID Tài khoản', sortable: true, minWidth: 180 },
+  { key: 'name', label: 'Tài khoản', sortable: true, minWidth: 250 },
+  { key: 'id', label: 'ID TKQC', sortable: true, minWidth: 180 },
   { key: 'automation_status', label: 'Trạng thái chạy', sortable: false, minWidth: 150 },
+  { key: 'process', label: 'Process', sortable: false, minWidth: 120 },
+  { key: 'balance', label: 'Số dư', sortable: true, minWidth: 120 }, // Đã có
+  { key: 'threshold', label: 'Ngưỡng', sortable: true, minWidth: 150 },
+  { key: 'remain', label: 'Ngưỡng còn lại', sortable: true, minWidth: 150 }, // Đã có
+  { key: 'limit', label: 'Limit', sortable: true, minWidth: 120 },
+  { key: 'spent', label: 'Tổng tiêu', sortable: true, minWidth: 150 },
   { key: 'currency', label: 'Tiền tệ', sortable: true, minWidth: 100 },
-  { key: 'spent', label: 'Đã chi tiêu', sortable: true, minWidth: 150 },
-  { key: 'threshold', label: 'Ngưỡng', sortable: true, minWidth: 150 }, // Cột cuối không cần width, nó sẽ tự lấp đầy
+  { key: 'adminNumber', label: 'SL Admin', sortable: true, minWidth: 100 },
+  { key: 'role', label: 'Quyền sở hữu', sortable: true, minWidth: 120 },
+  { key: 'payment', label: 'Thanh toán', sortable: false, minWidth: 150 },
+  { key: 'nextBillDate', label: 'Ngày lập HĐ', sortable: true, minWidth: 150 },
+  { key: 'nextBillDay', label: 'Số ngày đến hạn TT', sortable: true, minWidth: 150 },
+  { key: 'country', label: 'Quốc gia', sortable: true, minWidth: 100 },
+  { key: 'reason', label: 'Lý do khóa', sortable: false, minWidth: 180 },
+  { key: 'type', label: 'Loại', sortable: true, minWidth: 100 },
+  { key: 'bm', label: 'BM', sortable: true, minWidth: 180 },
+  { key: 'timezone', label: 'Múi giờ', sortable: true, minWidth: 180 },
 ])
 
 const adAccounts = ref([])
@@ -84,6 +98,32 @@ function loadSettings() {
   return saved ? JSON.parse(saved) : {}
 }
 
+const defaultColumnWidths = {
+  stt: 60,
+  name: 350,
+  id: 180,
+  status: 150,
+  process: 120,
+  message: 200,
+  balance: 120,
+  threshold: 150,
+  remain: 150,
+  limit: 120,
+  spent: 160,
+  currency: 110,
+  adminNumber: 100,
+  role: 120,
+  payment: 150,
+  nextBillDate: 150,
+  nextBillDay: 150,
+  country: 100,
+  reason: 180,
+  type: 100,
+  bm: 180,
+  timezone: 180,
+  automation_status: 150,
+}
+
 const { sharedSelectedIds, setSelectedIds } = useSelection()
 
 const settings = ref(loadSettings())
@@ -92,19 +132,8 @@ const statusFilter = ref(settings.value.statusFilter || '')
 const sortKey = ref(settings.value.sortKey || 'spent')
 const sortOrder = ref(settings.value.sortOrder || 'desc')
 const currentPage = ref(settings.value.currentPage || 1)
-const itemsPerPage = ref(settings.value.itemsPerPage || 5)
-const columnWidths = ref(
-  settings.value.columnWidths || {
-    stt: 60, // Cột STT
-    name: 350, // Cột Tên Tài khoản
-    id: 180, // Cột ID Tài khoản
-    status: 150, // Cột Trạng thái
-    automation_status: 150, // Cột Trạng thái chạy
-    currency: 110, // Cột Tiền tệ
-    spent: 160, // Cột Đã chi tiêu
-    threshold: 160, // Cột Ngưỡng
-  },
-)
+const itemsPerPage = ref(settings.value.itemsPerPage || 10)
+const columnWidths = ref(settings.value.columnWidths || { ...defaultColumnWidths })
 
 // --- Computed Properties ---
 
@@ -163,6 +192,10 @@ function sortBy(key) {
   }
 }
 
+function resetColumnWidths() {
+  columnWidths.value = { ...defaultColumnWidths }
+}
+
 function deleteSelected() {
   if (confirm(`Bạn có chắc muốn xóa ${sharedSelectedIds.value.length} tài khoản đã chọn?`)) {
     adAccounts.value = adAccounts.value.filter((acc) => !sharedSelectedIds.value.includes(acc.id))
@@ -170,7 +203,15 @@ function deleteSelected() {
   }
 }
 const handleAddAccount = (event) => {
-  adAccounts.value = event.detail;
+  // Dữ liệu có thể đến từng phần, nên chúng ta cần nối vào mảng hiện có
+  // hoặc thay thế hoàn toàn tùy vào logic
+  if (Array.isArray(event.detail)) {
+      // Xóa dữ liệu placeholder "Đang tải..." trước khi thêm dữ liệu thật
+      if (adAccounts.value.some(acc => acc.id === 'Đang tải...')) {
+          adAccounts.value = [];
+      }
+      adAccounts.value = [...adAccounts.value, ...event.detail];
+  }
 };
 
 onMounted(() => {

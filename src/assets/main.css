@@ -778,6 +778,16 @@ body {
   color: #f87171;
 }
 
+.status-warning {
+  background-color: rgba(251, 146, 60, 0.15); /* Orange background */
+  color: #fb923c; /* Orange text */
+}
+
+.status-danger {
+  background-color: rgba(239, 68, 68, 0.15); /* Red background */
+  color: #ef4444; /* Red text */
+}
+
 /* Custom scrollbar styles */
 .custom-scrollbar::-webkit-scrollbar {
   width: 8px;
@@ -875,6 +885,29 @@ body {
   opacity: 1;
   transform: scale(1.05);
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.5);
+}
+/* Áp dụng màu cho các nút lọc trạng thái giống như trong bảng */
+.status-badge-filter.status-active {
+  background-color: rgba(74, 222, 128, 0.15);
+  color: #4ade80;
+}
+
+.status-badge-filter.status-inactive {
+  background-color: rgba(248, 113, 113, 0.15);
+  color: #f87171;
+}
+
+.status-badge-filter.status-warning {
+  background-color: rgba(251, 146, 60, 0.15);
+  color: #fb923c;
+}
+.status-badge-filter.status-danger {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+.status-badge-filter.status-leave {
+  background-color: rgba(251, 191, 36, 0.15);
+  color: #facc15;
 }
 
 .pagination-button {
@@ -1015,7 +1048,10 @@ body {
 .table-scroll::-webkit-scrollbar {
   width: 6px;
 }
+table {
+table-layout: fixed;
 
+}
 .table-scroll::-webkit-scrollbar-track {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 3px;

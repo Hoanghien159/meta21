@@ -3,7 +3,7 @@
     <template #datatable>
       <!-- prettier-ignore -->
       <DataTable :columns="columns" :items="paginatedAccounts" :total-items="filteredAccounts.length" :sort-key="sortKey"
-        :sort-order="sortOrder" @sort="sortBy" selectable v-model:current-page="currentPage"
+        :sort-order="sortOrder" @sort="sortBy" selectable v-model:current-page="currentPage" @reset-widths="resetColumnWidths"
         v-model:items-per-page="itemsPerPage" :total-pages="totalPages" :column-widths="columnWidths"
         @update:column-widths="columnWidths = $event" :status-counts="statusCounts" v-model:status-filter="statusFilter" @click.stop>
         <template #cell(stt)="{ item }"> {{ item.stt }} </template>
@@ -146,6 +146,16 @@ function loadSettings() {
   return saved ? JSON.parse(saved) : {}
 }
 
+const defaultColumnWidths = {
+  stt: 60,
+  name: 350,
+  id: 180,
+  status: 150,
+  currency: 110,
+  spent: 160,
+  threshold: 160,
+}
+
 const { sharedSelectedIds, setSelectedIds } = useSelection()
 
 const settings = ref(loadSettings())
@@ -154,18 +164,8 @@ const statusFilter = ref(settings.value.statusFilter || '')
 const sortKey = ref(settings.value.sortKey || 'spent')
 const sortOrder = ref(settings.value.sortOrder || 'desc')
 const currentPage = ref(settings.value.currentPage || 1)
-const itemsPerPage = ref(settings.value.itemsPerPage || 5)
-const columnWidths = ref(
-  settings.value.columnWidths || {
-    stt: 60, // Cột STT
-    name: 350, // Cột Tên Tài khoản
-    id: 180, // Cột ID Tài khoản
-    status: 150, // Cột Trạng thái
-    currency: 110, // Cột Tiền tệ
-    spent: 160, // Cột Đã chi tiêu
-    threshold: 160, // Cột Ngưỡng
-  },
-)
+const itemsPerPage = ref(settings.value.itemsPerPage || 10)
+const columnWidths = ref(settings.value.columnWidths || { ...defaultColumnWidths })
 
 // --- Computed Properties ---
 
@@ -222,6 +222,10 @@ function sortBy(key) {
     sortKey.value = key
     sortOrder.value = 'desc'
   }
+}
+
+function resetColumnWidths() {
+  columnWidths.value = { ...defaultColumnWidths }
 }
 
 // --- Watchers to save settings ---

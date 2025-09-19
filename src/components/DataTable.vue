@@ -29,10 +29,8 @@
                 scope="col"
                 class="text-start"
                 :style="{
-                  width: (tempColumnWidths[column.key] || columnWidths[column.key]) && index < columns.length - 1 // Cột cuối cùng sẽ tự động co giãn
-                    ? `${tempColumnWidths[column.key] || columnWidths[column.key]}px`
-                    : 'auto',
-                  minWidth: column.minWidth ? `${column.minWidth}px` : (index === columns.length - 1 ? '100px' : '50px'),
+                  width: (tempColumnWidths[column.key] || columnWidths[column.key]) ? `${tempColumnWidths[column.key] || columnWidths[column.key]}px` : 'auto',
+                  minWidth: column.minWidth ? `${column.minWidth}px` : '50px',
                   maxWidth: column.maxWidth ? `${column.maxWidth}px` : 'none',
                 }"
                 :class="{ sortable: column.sortable }"
@@ -50,7 +48,7 @@
                     :class="{ asc: sortOrder === 'asc' }"
                   ></i>
                 </div>
-                <div v-if="index < columns.length - 1" class="resizer" @mousedown.stop="startResize($event, index)"></div>
+                <div class="resizer" @mousedown.stop="startResize($event, index)"></div>
               </th>
             </tr>
           </thead>
@@ -138,6 +136,13 @@
         </div>
       </div>
       <div class="d-flex align-items-center gap-3">
+        <button
+          class="pagination-button"
+          @click="$emit('reset-widths')"
+          title="Khôi phục kích thước cột"
+        >
+          <i class="ri-layout-column-line"></i>
+        </button>
         <div class="d-flex align-items-center gap-2 text-sm footer-text">
           <span>Số mục/trang:</span>
           <select
@@ -277,13 +282,18 @@ const activeColumnIndex = ref(-1)
 const tempColumnWidths = ref({})
 
 const getStatusClass = (status) => {
-  // Trạng thái chung
-  if (status === 'Hoạt động') return 'status-active'
-  if (['Tạm dừng', 'đóng hạn', 'Lỗi'].includes(status)) return 'status-inactive'
-  if (status === 'Đang xem xét') return 'status-leave'
-  // Trạng thái của trang Clone
-  if (status === 'Đã clone') return 'status-active'
-  if (status === 'Đang chờ') return 'status-leave'
+  // Trạng thái tài khoản quảng cáo & BM
+  if (status === 'Hoạt động') return 'status-active';
+  if (status === 'Đóng') return 'status-inactive';
+  if (status === 'Vô hiệu hóa' || status.startsWith('Die')) return 'status-danger';
+  if (status === 'Cần thanh toán' || status.startsWith('Đang kháng')) return 'status-warning';
+  if (status === 'Hold' || status === 'Đang xem xét') return 'status-leave';
+
+  // Trạng thái trang Clone
+  if (status === 'Đã clone') return 'status-active';
+  if (status === 'Đang chờ') return 'status-leave';
+  if (status === 'Lỗi') return 'status-inactive';
+
   // Trạng thái chạy automation
   if (status === 'Thành công') return 'status-active'
   if (status === 'Đang chạy') return 'status-leave'
@@ -507,10 +517,7 @@ onBeforeUnmount(() => {
 }
 
 /* Ensure table layout is consistent */
-.table {
-  table-layout: fixed;
-  width: 100%;
-}
+
 
 .table th,
 .table td {
