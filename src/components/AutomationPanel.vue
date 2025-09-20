@@ -16,7 +16,7 @@
       <div class="cards-container">
         <!-- Loop through features and render cards dynamically -->
         <div v-for="feature in features" :key="feature.id" class="feature-card">
-          <div class="card-header">
+          <div class="underline-slide card-header">
             <h6 class="card-title">
               <div class="card-icon" :class="getIconBgClass(feature.id)">
                 <i :class="feature.icon"></i>
@@ -35,16 +35,56 @@
               <span class="slider"></span>
             </label>
           </div>
-          <div v-if="feature.settings" class="card-settings" :id="feature.id">
-            <div v-for="setting in feature.settings" :key="setting.id" class="floating-input">
-              <input
-                :type="setting.type"
-                placeholder=" "
-                :id="setting.id"
-                :min="setting.min"
-                :value="setting.value"
-              />
-              <label :for="setting.id">{{ setting.label }}</label>
+          <div v-if="feature.settings && feature.settings.length > 0" class="card-settings" :id="feature.id">
+            <div v-if="feature.settings && feature.settings.length > 0" class="settings-grid">
+              <template v-for="setting in feature.settings" :key="setting.id">
+                <!-- Nếu là container, render các children bên trong -->
+                <div v-if="setting.type === 'container' && shouldShowSetting(setting)" :class="setting.class">
+                  <template v-for="child in setting.children" :key="child.id">
+                    <div class="setting-item" :class="child.class">
+                      <!-- Sao chép logic render từ bên ngoài vào đây -->
+                      <div v-if="!['checkbox', 'select', 'button'].includes(child.type)" class="floating-input">
+                        <input :type="child.type" placeholder=" " :id="child.id" :min="child.min" v-model="settingsValues[child.id]" />
+                        <label :for="child.id">{{ child.label }}</label>
+                      </div>
+                      <div v-else-if="child.type === 'checkbox'" class="form-check form-switch custom-checkbox-setting">
+                        <input class="form-check-input" type="checkbox" role="switch" :id="child.id" v-model="settingsValues[child.id]" />
+                        <label class="form-check-label" :for="child.id">{{ child.label }}</label>
+                      </div>
+                      <div v-else-if="child.type === 'select'" class="floating-input">
+                        <select :id="child.id" v-model="settingsValues[child.id]" class="form-select">
+                          <option v-for="option in child.options" :key="option.value" :value="option.value">{{ option.text }}</option>
+                        </select>
+                        <label :for="child.id">{{ child.label }}</label>
+                      </div>
+                      <button v-else-if="child.type === 'button'" class="underline-slide btn btn-secondary fw-bold shadow-sm settings-btn">
+                        {{ child.label }}
+                      </button>
+                    </div>
+                  </template>
+                </div>
+
+                <!-- Nếu không phải container, render như bình thường -->
+                <div v-else-if="setting.type !== 'container' && shouldShowSetting(setting)" class="setting-item" :class="[{ 'w-100': setting.type === 'button' && !setting.class }, setting.class]">
+                  <div v-if="!['checkbox', 'select', 'button'].includes(setting.type)" class="floating-input">
+                    <input :type="setting.type" placeholder=" " :id="setting.id" :min="setting.min" v-model="settingsValues[setting.id]" />
+                    <label :for="setting.id">{{ setting.label }}</label>
+                  </div>
+                  <div v-else-if="setting.type === 'checkbox'" class="form-check form-switch custom-checkbox-setting">
+                    <input class="form-check-input" type="checkbox" role="switch" :id="setting.id" v-model="settingsValues[setting.id]" />
+                    <label class="form-check-label" :for="setting.id">{{ setting.label }}</label>
+                  </div>
+                  <div v-else-if="setting.type === 'select'" class="floating-input">
+                    <select :id="setting.id" v-model="settingsValues[setting.id]" class="form-select">
+                      <option v-for="option in setting.options" :key="option.value" :value="option.value">{{ option.text }}</option>
+                    </select>
+                    <label :for="setting.id">{{ setting.label }}</label>
+                  </div>
+                  <button v-else-if="setting.type === 'button'" class="underline-slide btn btn-secondary fw-bold shadow-sm settings-btn">
+                    {{ setting.label }}
+                  </button>
+                </div>
+              </template>
             </div>
           </div>
         </div>
@@ -52,11 +92,11 @@
 
       <div class="control-panel">
         <div class="control-buttons">
-          <button class="btn-start" id="startBtn" @click="startAutomation">
+          <button class="underline-slide btn-start" id="startBtn" @click="startAutomation">
             <i class="ri-play-fill"></i>
             Bắt đầu
           </button>
-          <button class="btn-stop" id="stopBtn" @click="stopAutomation">
+          <button class="underline-slide btn-stop" id="stopBtn" @click="stopAutomation">
             <i class="ri-stop-fill"></i>
             Dừng lại
           </button>
@@ -78,7 +118,7 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, defineProps, ref } from 'vue'
+import { onMounted, onUnmounted, defineProps, ref, watch } from 'vue'
 import { sharedSelectedIds } from '@/composables/useSelection'
 import { useAutomation } from '@/composables/useAutomation'
 import { useToast } from '@/composables/useToast'
@@ -96,6 +136,37 @@ const props = defineProps({
 
 const { emit: emitAutomation, on: onAutomation } = useAutomation()
 const { addToast } = useToast()
+
+const settingsValues = ref({})
+
+// Khởi tạo giá trị cho settingsValues khi features thay đổi
+watch(
+  () => props.features,
+  (newFeatures) => {
+    const initialValues = {}
+    newFeatures.forEach((feature) => {
+      if (feature.settings) {
+        feature.settings.forEach((setting) => {
+          if (setting.type === 'container' && setting.children) {
+            setting.children.forEach(child => {
+              initialValues[child.id] = child.type === 'checkbox' ? false : '';
+            });
+          }
+          initialValues[setting.id] = setting.type === 'checkbox' ? false : ''
+        })
+      }
+    })
+    settingsValues.value = initialValues
+  },
+  { immediate: true, deep: true },
+)
+
+watch(
+  settingsValues,
+  (newValues) => {
+    console.log('Settings changed:', newValues);
+  }, { deep: true }
+);
 
 const isCollapsed = ref(false)
 
@@ -116,6 +187,20 @@ function getIconBgClass(featureId) {
 }
 function togglePanel() {
   isCollapsed.value = !isCollapsed.value
+}
+
+function shouldShowSetting(setting) {
+  if (!setting.showIf) {
+    return true; // Luôn hiển thị nếu không có điều kiện
+  }
+
+  if (Array.isArray(setting.showIf)) {
+    // Xử lý điều kiện OR: chỉ cần một điều kiện đúng
+    return setting.showIf.some(condition => settingsValues.value[condition.id] === condition.value);
+  } else {
+    // Xử lý điều kiện đơn như cũ
+    return settingsValues.value[setting.showIf.id] === setting.showIf.value;
+  }
 }
 
 function toggleSettings(event, settingsId) {
@@ -153,7 +238,7 @@ function startAutomation() {
         const settings = {}
         if (feature.settings) {
           feature.settings.forEach((setting) => {
-            settings[setting.id] = document.getElementById(setting.id)?.value
+            settings[setting.id] = settingsValues.value[setting.id]
           })
         }
 
@@ -163,6 +248,11 @@ function startAutomation() {
           addToast('Vui lòng nhập tên mới cho tính năng "Đổi tên tài khoản"!', 'error')
           return // Dừng lại nếu thiếu thông tin
         }
+        // Validation cho AccmanageSettings
+        if (feature.id === 'AccmanageSettings' && settings.rename && !settings.newName) {
+          addToast('Vui lòng nhập "Tên mới" khi chọn "Đổi tên"!', 'error')
+          return
+        }
         // Thêm các kiểm tra khác cho các tính năng khác ở đây nếu cần
         // Ví dụ: if (feature.id === 'shareSettings' && !settings.shareId) { ... }
 
@@ -170,6 +260,11 @@ function startAutomation() {
       }
     }
   })
+  const tagFeature = activeFeatures.find(f => f.id === 'tagSettings');
+    if (tagFeature && !tagFeature.settings.tagName) {
+      addToast('Vui lòng nhập tên thẻ cho tính năng "Gắn thẻ tài khoản"!', 'error');
+      return;
+    }
 
   if (activeFeatures.length === 0) {
     addToast('Vui lòng chọn ít nhất một tính năng để bắt đầu!', 'warning')
@@ -281,6 +376,49 @@ onMounted(() => {
   z-index: 1001;
   flex-shrink: 0;
 }
+.settings-grid {
+  display: flex;
+  flex-wrap: wrap;
+  /* gap: 15px; Khoảng cách đều giữa các item */
+row-gap: 10px;
+/* column-gap: 30px; */
+  align-items: center;
+}
+.setting-item {
+  flex: 1 1 calc(50% - 8px); /* Mỗi item chiếm khoảng 50% chiều rộng, trừ đi gap */
+}
+
+.setting-item.half-width {
+  flex-basis: calc(50% - 5px); /* Đảm bảo 2 item nằm trên 1 hàng */
+  padding-right: 5px;
+}
+
+.setting-item.full-width {
+  flex-basis: 100%;
+}
+
+.full-width-container {
+  flex-basis: 100%;
+  display: flex;
+  flex-wrap: wrap; /* Cho phép các item xuống hàng */
+  row-gap: 10px; /* Khoảng cách giữa các hàng */
+  column-gap: 10px; /* Khoảng cách giữa các cột */
+  align-items: center; /* Căn chỉnh các item con theo chiều dọc */
+}
+
+.full-width-container > .setting-item {
+  flex: 1 1 calc(50% - 5px); /* Mỗi item con chiếm 50% chiều rộng của container */
+  min-width: 120px; /* Đảm bảo không bị co quá nhỏ */
+}
+
+.full-width-container .floating-input {
+  margin-bottom: 0; /* Bỏ margin-bottom của floating-input bên trong container */
+}
+
+.setting-item.full-width .floating-input {
+  margin-bottom: 0;
+}
+
 
 /* Panel Header */
 .panel-header {
@@ -377,7 +515,7 @@ input:checked + .slider:before {
 
 /* Card Settings */
 .card-settings {
-  padding: 20px;
+  padding: 10px;
   display: none;
 }
 
@@ -429,6 +567,16 @@ input:checked + .slider:before {
   padding: 0 5px;
 }
 
+/* Custom style cho checkbox setting */
+.custom-checkbox-setting {
+  padding-left: 2.5em; /* Tăng khoảng cách để không bị chồng chéo */
+  margin-bottom: 0; /* Bỏ margin-bottom để grid quản lý */
+}
+
+.setting-button {
+  margin-bottom: 10px;
+}
+
 /* Control Panel */
 .control-panel {
   padding: 20px;
@@ -440,25 +588,31 @@ input:checked + .slider:before {
   margin-bottom: 20px;
 }
 
-.btn-start,
-.btn-stop {
+.btn-start, .btn-stop {
   flex: 1;
   padding: 12px;
   border: none;
   border-radius: 8px;
   font-weight: 600;
   font-size: 16px;
-  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
 .btn-start {
-  background: #2ecc71;
+  background: linear-gradient(145deg, #34d399, #28a745);
   color: white;
+  border: 1px solid #28a745;
+}
+
+.btn-start:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3);
 }
 
 .btn-start:hover {
@@ -467,14 +621,15 @@ input:checked + .slider:before {
 }
 
 .btn-stop {
-  background: #e74c3c;
+  background: linear-gradient(145deg, #ef4444, #dc3545);
   color: white;
   display: none;
+  border: 1px solid #dc3545;
 }
 
 .btn-stop:hover {
-  background: #c0392b;
   transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(220, 53, 69, 0.3);
 }
 
 .control-inputs {
@@ -603,6 +758,10 @@ input:checked + .slider:before {
   background: var(--bs-tertiary-bg);
 }
 
+[data-bs-theme='light'] .form-select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+}
+
 [data-bs-theme='light'] .control-panel {
   background-color: var(--bs-tertiary-bg);
   border-top: 1px solid var(--bs-border-color);
@@ -615,4 +774,17 @@ input:checked + .slider:before {
 [data-bs-theme='light'] input:checked + .slider {
   background-color: var(--bs-primary);
 }
+
+.form-select {
+  padding-top: 1.0rem;
+  padding-bottom: 0.4rem;
+}
+
+[data-bs-theme='dark'] .form-select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23adb5bd' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+  border-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(47, 51, 61, 0.7);
+  color: #dee2e6;
+}
+
 </style>

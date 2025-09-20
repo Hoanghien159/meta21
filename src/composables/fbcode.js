@@ -6,14 +6,29 @@ import {
   fetch2,
 } from './extensionUtils.js'
 import { useToast } from '@/composables/useToast.js'
+import moment from 'moment'
+import { delay } from './utils.js'
 
 let fbtkqc
 const { addToast } = useToast()
+
+/**
+ * Chuyển đổi một chuỗi số có định dạng (ví dụ: "1,234.56") thành một số.
+ * @param {string | number} value - Giá trị cần chuyển đổi.
+ * @returns {number} - Giá trị số sau khi chuyển đổi.
+ */
+function convertNumberFormat(value) {
+  if (typeof value === 'number') return value
+  return Number(String(value).replace(/,/g, '')) || 0
+}
 class FB {
   constructor() {
     this.userInfo = false
     this.accessToken = false
     this.dtsg = false
+    this.fbtkqc = new FBTKQC(this)
+    this.fbbm = new FBBM(this)
+    this.fbpage = new FBPAGE(this)
   }
 
   async handleCheck(action) {
@@ -38,9 +53,11 @@ class FB {
         const taskIndex = tasks.findIndex((task) => task.id === taskId)
         const task = tasks[taskIndex]
         $(document).trigger('running', [task.id])
-        $(document).trigger('message', [{ id: task.id, message: '' }])
-        tasks[taskIndex].process = 'RUNNING'
-        runningTasks.push(task.id)
+      // Thay vì truy cập trực tiếp, hãy gửi sự kiện
+      const event = new CustomEvent('updateRow', { detail: { id: task.id, field: 'process', value: '' } });
+      document.dispatchEvent(event);
+      tasks[taskIndex].process = 'RUNNING';
+      runningTasks.push(task.id);
         try {
           await action(
             task,
@@ -271,7 +288,7 @@ class FB {
   updateBmEmail(_0x2f0f56, _0x7fa5cb) {
     return new Promise(async (_0x25bd66, _0x55b48c) => {
       try {
-        const _0x2aa0ba = await fbbm.getMainBmAccounts(_0x2f0f56)
+        const _0x2aa0ba = await this.fbbm.getMainBmAccounts(_0x2f0f56)
         const _0x5846ac = await fetch2(
           'https://business.facebook.com/api/graphql/?_callFlowletID=4936&_triggerFlowletID=4932',
           {
@@ -318,7 +335,7 @@ class FB {
     return new Promise(async (_0x4b4ae2, _0xe23d4d) => {
       try {
         const _0x139970 = await fetch2(
-          'https://graph.facebook.com/v17.0/' +
+          'https://graph.facebook.com/v19.0/' +
             _0x5d58ba +
             '/owned_instagram_accounts?access_token=' +
             this.accessToken +
@@ -332,7 +349,7 @@ class FB {
     })
   }
   async sleeptime(_0x1c2b3f = 1) {
-    await delayTime(_0x1c2b3f * 10)
+    await delay(_0x1c2b3f * 10)
   }
   generateCustomId() {
     // z3kqldmn-6xb3-l9j2-jt9x-w0u7smc4r7he
@@ -347,7 +364,7 @@ class FB {
   }
   generateFlowInstanceIdidNumber() {
     //flow_instance_id  "462173849"
-    let idNumber = Math.floor(Math.random() * 1000000000)
+    let idNumber = Math.floor(Math.random() * 900000000) + 100000000
     return `${idNumber}`
   }
   generateFlowInstanceIduniqueString() {
@@ -397,7 +414,7 @@ class FB {
           },
         )
         const _0x148e18 = await fetch2(
-          'https://adsmanager.facebook.com/ads/manage/settings/permissions/?action=add_user_confirm&_callFlowletID=9287&_triggerFlowletID=9281',
+          'https://adsmanager.facebook.com/ads/manage/settings/permissions/?action=add_user_confirm&_callFlowletID=9287&_triggerFlowletID=9281', // Using fb.dtsg and fb.uid from the outer scope
           {
             headers: {
               accept: '*/*',
@@ -411,7 +428,7 @@ class FB {
               '&was_success=1&error_code=&user_id=' +
               _0x1dc64c +
               '&search_query=&add_user_permission=281423141961500&__usid=6-Tsjjz1o1pttdlc%3APsjk0aw25pkra%3A0-Asjjz1o19kla0-RV%3D6%3AF%3D&__aaid=' +
-              _0x4eae62 +
+              _0x4eae62 + // Using fb.uid from the outer scope
               '&__user=' +
               this.uid +
               '&__a=1&__req=1i&__hs=19975.BP%3Aads_manager_pkg.2.0..0.0&dpr=1&__ccg=UNKNOWN&__rev=1016325924&__s=ipvh6d%3A1elzm6%3Awcjrck&__hsi=7412680376252426657&__dyn=7AgSXgWGgWEjgDBxmSudg9omoiyoK6FVpkihG5Xx2m2q3K2KmeGqKi5axeqaScCCG225pojACjyocuF98SmqnK7GzUuwDxq4EOezoK26UKbC-mdwTxOESegGbwgEmK9y8Gdz8hyUuxqt1eiUO4EgCyku4oS4EWfGUhwyg9p44889EScxyu6UGq13yHGmmUTxJe9LgbeWG9DDl0zlBwyzp8KUV2U8oK1IxO4VAcKmieyp8BlBUK2O4UOi3Kdx29wgojKbUO1Wxu4GBwkEuz478shECumbz8KiewwBK68eF8pK1vDyojyUix92UtgKi3a6Ex0RyQcKazQ3G5EbpEtzA6Sax248GUgz98hAy8kybKfxefKaxWi2y2i7VEjCx6EO489UW5ohwZAxK4U-dwMxeayEiwAgCmq6UCQubxu3ydDxG8wRyK4UoLzokGp5yrz8C9wGLg-9wFy9oCagixi48hyUix6cG228BCyKbwzxa10yUG1LDDV8sw8KmbwVzi1y4fz8coiGQU9EeVVUWrUlUym5UpU9oeUhxWUnposxx7KAfwxCwyDxm5V9UWaV-bxhem9xq2K9AwHxq5kiV89bx5e8wAAAVQEhyeucyEy68WaJ129ho&__csr=&__comet_req=25&lsd=o_cxfnmTRU9tXHvOIjv5ic&__spin_r=1016325924&__spin_b=trunk&__spin_t=1725899143&__jssesw=1',
@@ -430,7 +447,7 @@ class FB {
     return new Promise(async (_0x2b8d6b, _0x478980) => {
       try {
         let adAccountsData = { data: [] } // Khởi tạo với một mảng dữ liệu rỗng
-        fb.updateLoadingProgress(35)
+        this.fb.updateLoadingProgress(35)
         let total
         let adsProcessed = 0
         try {
@@ -447,17 +464,17 @@ class FB {
           if (typeof onProgress === 'function') {
             onProgress({ adsProcessed, total })
           }
-          fb.updateLoadingProgress(45)
+          this.fb.updateLoadingProgress(45)
           // Lọc ra các tài khoản quảng cáo do doanh nghiệp sở hữu
           //  adAccountsData.data = adAccountsData.data.filter(_0x355ff7 => !_0x355ff7.owner_business);
           // Ensure adAccountsData.data exists before filtering
           if (adAccountsData && Array.isArray(adAccountsData.data)) {
-            adAccountsData.data = adAccountsData.data.filter((account) => !account.owner_business)
+            adAccountsData.data = adAccountsData.data.filter((account) => !account.owner_business);
           } else {
             adAccountsData.data = [] // Initialize as empty array if data is missing
           }
 
-          fb.updateLoadingProgress(55)
+          this.fb.updateLoadingProgress(55)
         } catch {
           // Nếu lệnh gọi Graph API không thành công, hãy thử Ads Manager Graph API (v16.0)
           const _0x4f9680 = await fetch2(
@@ -525,8 +542,8 @@ class FB {
             6: 'Bị hạn chế do liên quan đến độ tin cậy',
             7: 'Tài khoản đã bị đóng vĩnh viễn',
             8: 'Tài khoản reseller (đại lý) không sử dụng và bị đóng',
-          }
-          fb.updateLoadingProgress(65)
+          };
+          this.fb.updateLoadingProgress(65)
           // Bản đồ vô hiệu hóa do thành chuỗi dễ đọc hơn
           _0x2b8d6b(
             adAccountsData.data.map((account) => {
@@ -612,308 +629,6 @@ class FB {
       }
     })
   }
-  getAdAccountsADS(IDKQC) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        let trangThaiTaiKhoan2
-        let trangThaiTaiKhoan3
-        const url = `https://graph.facebook.com/v15.0/act_${IDKQC}?fields=business,owner_business,name,account_id,disable_reason,account_status,currency,adspaymentcycle,adtrust_dsl,balance,amount_spent,account_currency_ratio_to_usd,users,all_payment_methods{pm_credit_card{display_string,exp_month,exp_year,is_verified}},created_time,next_bill_date,timezone_name,timezone_offset_hours_utc,insights.date_preset(maximum){spend},userpermissions,owner,is_prepay_account&summary=true&access_token=${this.accessToken2}`
-        const { json: account } = await fetch2(url)
-
-        if (!account?.account_id) return reject('Không có dữ liệu tài khoản quảng cáo hợp lệ.')
-        try {
-          const thongTinHold = await this.checkHold(IDKQC)
-          // Nếu tài khoản bị hold, đặt trạng thái là 999
-          if (thongTinHold.status) {
-            trangThaiTaiKhoan2 = 999
-          }
-          if (idBm) {
-            // Nếu có idBm, kiểm tra trạng thái tài khoản quảng cáo qua API GraphQL
-            const _0x1f0f37 = await fetch2(
-              'https://business.facebook.com/api/graphql/?_callFlowletID=1&_triggerFlowletID=2',
-              {
-                headers: {
-                  'content-type': 'application/x-www-form-urlencoded',
-                },
-                body:
-                  'av=' +
-                  this.uid +
-                  '&__usid=6-Tse1ovt1j8u6wd%3APse1oxj1m4rr33%3A0-Ase1ovtochuga-RV%3D6%3AF%3D&session_id=144e97c8e5fc4969&__aaid=' +
-                  IDKQC +
-                  '&__bid=' +
-                  idBm +
-                  '&__user=' +
-                  this.uid +
-                  '&__a=1&__req=1&__hs=19868.BP%3ADEFAULT.2.0..0.0&dpr=1&__ccg=GOOD&__rev=1013767953&__s=qxxa8s%3Ax39hkh%3Apw4cw7&__hsi=7372940659475198570&__dyn=7xeUmxa2C5rgydwn8K2abBAjxu59o9E6u5VGxK5FEG484S4UKewSAxam4EuGfwnoiz8WdwJzUmxe1kx21FxG9xedz8hw9yq3a4EuCwQwCxq1zwCCwjFFpobQUTwJBGEpiwzlwXyXwZwu8sxF3bwExm3G4UhwXxW9wgo9oO1Wxu0zoO12ypUuwg88EeAUpK19xmu2C2l0Fz98W2e2i3mbgrzUiwExq1yxJUpx2awCx6i8wxK2efK2W1dx-q4VEhG7o4O1fwwxefzobEaUiwm8Wubwk8Sq6UfEO32fxiFUd8bGwgUy1kx6bCyUhzawLCyKbwzweau0Jo6-1FAyo884KeCK2q362u1dxW6U98a85Ou0DU7i1TwUw&__csr=&fb_dtsg=' +
-                  this.dtsg +
-                  '&jazoest=25134&lsd=nZD2aEOcch1tFKEE4sGoAT&__spin_r=1013767953&__spin_b=trunk&__spin_t=1716646518&__jssesw=1&fb_api_caller_class=RelayModern&fb_api_req_friendly_name=AccountQualityHubAssetViewQuery&variables=%7B%22assetOwnerId%22%3A%223365254127037950%22%2C%22assetId%22%3A%22' +
-                  IDKQC +
-                  '%22%2C%22scale%22%3A1%7D&server_timestamps=true&doc_id=6875615999208668',
-                method: 'POST',
-              },
-            )
-
-            const thongTinChiTiet = _0x1f0f37.json
-            const thongTinHanChe = thongTinChiTiet.data.adAccountData.advertising_restriction_info
-
-            // Kiểm tra các loại hạn chế và đặt trạng thái tương ứng
-            if (
-              thongTinHanChe.ids_issue_type === 'AD_ACCOUNT_ALR_DISABLE' &&
-              thongTinHanChe.status === 'APPEAL_PENDING'
-            ) {
-              trangThaiTaiKhoan3 = 4 // Đang kháng nghị
-            }
-            if (
-              thongTinHanChe.ids_issue_type === 'AD_ACCOUNT_ALR_DISABLE' &&
-              (thongTinHanChe.status === 'VANILLA_RESTRICTED' ||
-                thongTinHanChe.status === 'APPEAL_REJECTED')
-            ) {
-              trangThaiTaiKhoan3 = 5 // Bị hạn chế hoặc kháng nghị bị từ chối
-            }
-            if (
-              thongTinHanChe.ids_issue_type === 'PREHARM_AD_ACCOUNT_BANHAMMER' &&
-              thongTinHanChe.status === 'APPEAL_INCOMPLETE'
-            ) {
-              trangThaiTaiKhoan3 = 6 // Hạn chế chưa hoàn thành kháng nghị
-            }
-            if (
-              thongTinHanChe.ids_issue_type === 'PREHARM_AD_ACCOUNT_BANHAMMER' &&
-              thongTinHanChe.status === 'APPEAL_REJECTED'
-            ) {
-              trangThaiTaiKhoan3 = 7 // Hạn chế và kháng nghị bị từ chối
-            }
-          }
-        } catch {}
-        // Xử lý dữ liệu chính
-        const disableReasons = {
-          0: '',
-          1: 'Vi phạm chính sách',
-          2: 'Hoạt động IP bất thường',
-          3: 'Thanh toán bất thường',
-          4: 'Tài khoản không hợp lệ hoặc bị nghi ngờ giả mạo',
-          5: 'Bị xem xét theo hệ thống kiểm duyệt tự động',
-          6: 'Bị hạn chế do liên quan đến độ tin cậy',
-          7: 'Tài khoản đã bị đóng vĩnh viễn',
-          8: 'Tài khoản reseller (đại lý) không sử dụng và bị đóng',
-        }
-
-        const nf = new Intl.NumberFormat('en-US')
-        const safeNum = (val) => Number(val) || 0
-
-        const threshold = safeNum(account.adspaymentcycle?.data?.[0]?.threshold_amount)
-        let balance = safeNum(account.balance)
-        const currencies = [
-          'EUR',
-          'BRL',
-          'USD',
-          'CNY',
-          'MYR',
-          'UAH',
-          'QAR',
-          'THB',
-          'TRY',
-          'GBP',
-          'PHP',
-          'INR',
-        ]
-        if (currencies.includes(account.currency)) {
-          balance /= 100
-        }
-
-        const remain = threshold - balance
-        const spend = safeNum(account.insights?.data?.[0]?.spend)
-        const created = moment(account.created_time)
-        const nextBill = moment(account.next_bill_date)
-        const admins = account.userpermissions?.data?.filter((u) => u.role === 'ADMIN') || []
-
-        resolve([
-          {
-            status: [account.account_status, trangThaiTaiKhoan2, trangThaiTaiKhoan3],
-            type: account.owner_business ? 'Business' : 'Cá nhân',
-            reason: disableReasons[account.disable_reason] || '',
-            account: account.name,
-            adId: account.account_id,
-            limit: nf.format(safeNum(account.adtrust_dsl)),
-            spend: nf.format(spend),
-            remain: nf.format(remain),
-            adminNumber: admins.length,
-            nextBillDate: nextBill.isValid() ? nextBill.format('DD/MM/YYYY') : 'N/A',
-            nextBillDay: Math.max(0, nextBill.diff(moment(), 'days')),
-            createdTime: created.isValid() ? created.format('DD/MM/YYYY') : 'N/A',
-            timezone: account.timezone_name,
-            currency: `${account.currency}-${account.is_prepay_account ? 'TT' : 'TS'}`,
-            threshold: nf.format(threshold),
-            role: account.userpermissions?.data?.[0]?.role || 'UNKNOWN',
-            balance: nf.format(balance),
-            bm: account.owner_business?.id || null,
-            payment: JSON.stringify(account.all_payment_methods?.pm_credit_card || []),
-          },
-        ])
-      } catch (error) {
-        reject(error)
-      }
-    })
-  }
-  checkHold(_0x4b9fbf) {
-    return new Promise(async (_0x5d57cb, _0x523aca) => {
-      const _0x474516 = {
-        status: false,
-        country: '',
-      }
-      try {
-        const _0x1d0307 = await fetch2('https://business.facebook.com/api/graphql/?_flowletID=1', {
-          headers: {
-            'content-type': 'application/x-www-form-urlencoded',
-          },
-          method: 'POST',
-          body:
-            'av=' +
-            this.uid +
-            '&__usid=6-Ts51f1w1gfkvpj%3APs51f2gvheire%3A0-As51f1wdhal3d-RV%3D6%3AF%3D&__user=' +
-            this.uid +
-            '&__a=1&__req=8&__hs=19693.BP%3ADEFAULT.2.0..0.0&dpr=1&__ccg=EXCELLENT&__rev=1010170946&__s=ew2ohe%3Afdtegc%3A7il5yk&__hsi=7307960693527437806&__dyn=7xe6Eiw_K5U5ObwyyVp6Eb9o6C2i5VGxK7oG484S7UW3qiidBxa7GzU721nzUmxe1Bw8W4Uqx619g5i2i221qwa62qq1eCBBwLghUbpqG6kE8Ro4uUfo7y78qggwExm3G4UhwXwEwlU-0DU2qwgEhxW10wv86eu1fgaohzE8U6q78-3K5E7VxK48W2a4p8y26UcXwAyo98gxu5ogAzEowwwTxu1cwwwzzobEaUiwYwGxe1uwciawaG13xC4oiyVV98OEdEGdwzweau0Jomwm8gU5qi2G1bzEG2q362u1IxK321VDx27o72&__csr=&fb_dtsg=' +
-            this.dtsg +
-            '&jazoest=25595&lsd=_WnEZ0cRpYEKpFXHPcY7Lg&__aaid=' +
-            _0x4b9fbf +
-            '&__spin_r=1010170946&__spin_b=trunk&__spin_t=1701517192&__jssesw=1&fb_api_caller_class=RelayModern&fb_api_req_friendly_name=BillingHubPaymentSettingsViewQuery&variables=%7B%22assetID%22%3A%22' +
-            _0x4b9fbf +
-            '%22%7D&server_timestamps=true&doc_id=6747949808592904',
-        })
-        const _0x5b168b = _0x1d0307.text
-        const _0x1310e0 = _0x5b168b.match(/(?<=\"predicated_business_country_code\":\")[^\"]*/g)
-        if (_0x1310e0[0]) {
-          _0x474516.country = _0x1310e0[0]
-        }
-        if (_0x5b168b.includes('RETRY_FUNDS_HOLD')) {
-          _0x474516.status = true
-        } else {
-          _0x474516.status = false
-        }
-      } catch {
-        _0x474516.status = false
-      }
-      _0x5d57cb(_0x474516)
-    })
-  }
-  checkADSlive(adInfo, _0x4c4040) {
-    return new Promise(async (_0x567957, _0x4cb824) => {
-      let trangThaiTaiKhoan1
-      let trangThaiTaiKhoan2
-      try {
-        const response = await fetch2(
-          'https://graph.facebook.com/v19.0/act_' +
-            adInfo.adId +
-            '?fields=id,name,currency,adtrust_dsl,adspaymentcycle{threshold_amount},balance,amount_spent,funding_source_details,business_country_code,timezone_name,account_status,spend_cap,created_time,business,business_city,business_name,business_state,business_street,business_street2,business_zip&access_token=' +
-            fb.accessToken,
-        )
-        const data = await response.json
-        if (response?.errors ?? response?.error) {
-          addToast(`❌ Lỗi check live: ${error.message || error}`, 'error')
-        }
-        trangThaiTaiKhoan1 = data.account_status
-        const idBm = $("select[name='accountSelect']").val()
-        const thongTinHold = await this.checkHold(adInfo.adId)
-        // Nếu tài khoản bị hold, đặt trạng thái là 999
-        if (thongTinHold.status) {
-          trangThaiTaiKhoan2 = 999
-        } else if (idBm != 0) {
-          await delayTime(400)
-          // Nếu có idBm, kiểm tra trạng thái tài khoản quảng cáo qua API GraphQL
-          const _0x1f0f37 = await fetch2(
-            'https://business.facebook.com/api/graphql/?_callFlowletID=1&_triggerFlowletID=2',
-            {
-              headers: {
-                'content-type': 'application/x-www-form-urlencoded',
-              },
-              body:
-                'av=' +
-                fb.uid +
-                '&__usid=6-Tse1ovt1j8u6wd%3APse1oxj1m4rr33%3A0-Ase1ovtochuga-RV%3D6%3AF%3D&session_id=144e97c8e5fc4969&__aaid=' +
-                adInfo.adId +
-                '&__bid=' +
-                idBm +
-                '&__user=' +
-                fb.uid +
-                '&__a=1&__req=1&__hs=19868.BP%3ADEFAULT.2.0..0.0&dpr=1&__ccg=GOOD&__rev=1013767953&__s=qxxa8s%3Ax39hkh%3Apw4cw7&__hsi=7372940659475198570&__dyn=7xeUmxa2C5rgydwn8K2abBAjxu59o9E6u5VGxK5FEG484S4UKewSAxam4EuGfwnoiz8WdwJzUmxe1kx21FxG9xedz8hw9yq3a4EuCwQwCxq1zwCCwjFFpobQUTwJBGEpiwzlwXyXwZwu8sxF3bwExm3G4UhwXxW9wgo9oO1Wxu0zoO12ypUuwg88EeAUpK19xmu2C2l0Fz98W2e2i3mbgrzUiwExq1yxJUpx2awCx6i8wxK2efK2W1dx-q4VEhG7o4O1fwwxefzobEaUiwm8Wubwk8Sq6UfEO32fxiFUd8bGwgUy1kx6bCyUhzawLCyKbwzweau0Jo6-1FAyo884KeCK2q362u1dxW6U98a85Ou0DU7i1TwUw&__csr=&fb_dtsg=' +
-                fb.dtsg +
-                '&jazoest=25134&lsd=nZD2aEOcch1tFKEE4sGoAT&__spin_r=1013767953&__spin_b=trunk&__spin_t=1716646518&__jssesw=1&fb_api_caller_class=RelayModern&fb_api_req_friendly_name=AccountQualityHubAssetViewQuery&variables=%7B%22assetOwnerId%22%3A%223365254127037950%22%2C%22assetId%22%3A%22' +
-                adInfo.adId +
-                '%22%2C%22scale%22%3A1%7D&server_timestamps=true&doc_id=6875615999208668',
-              method: 'POST',
-            },
-          )
-          const thongTinChiTiet = _0x1f0f37.json
-          const thongTinHanChe = thongTinChiTiet?.data?.adAccountData?.advertising_restriction_info
-          if (!thongTinHanChe) {
-            trangThaiTaiKhoan2 = null
-          } else {
-            // Kiểm tra các loại hạn chế và đặt trạng thái tương ứng
-            if (
-              thongTinHanChe.ids_issue_type === 'AD_ACCOUNT_ALR_DISABLE' &&
-              thongTinHanChe.status === 'APPEAL_PENDING'
-            ) {
-              trangThaiTaiKhoan2 = 4 // Đang kháng nghị
-            }
-            if (
-              thongTinHanChe.ids_issue_type === 'AD_ACCOUNT_ALR_DISABLE' &&
-              (thongTinHanChe.status === 'VANILLA_RESTRICTED' ||
-                thongTinHanChe.status === 'APPEAL_REJECTED')
-            ) {
-              trangThaiTaiKhoan2 = 5 // Bị hạn chế hoặc kháng nghị bị từ chối
-            }
-            if (
-              thongTinHanChe.ids_issue_type === 'PREHARM_AD_ACCOUNT_BANHAMMER' &&
-              thongTinHanChe.status === 'APPEAL_INCOMPLETE'
-            ) {
-              trangThaiTaiKhoan2 = 6 // Hạn chế chưa hoàn thành kháng nghị
-            }
-            if (
-              thongTinHanChe.ids_issue_type === 'PREHARM_AD_ACCOUNT_BANHAMMER' &&
-              thongTinHanChe.status === 'APPEAL_REJECTED'
-            ) {
-              trangThaiTaiKhoan2 = 7 // Hạn chế và kháng nghị bị từ chối
-            }
-          }
-        }
-      } catch (error) {
-        _0x4c4040('message', { message: 'Check lỗi' })
-        console.log(error)
-      }
-      _0x4c4040('status', { status: [trangThaiTaiKhoan1, trangThaiTaiKhoan2] })
-      _0x567957()
-    })
-  }
-
-  getCard(adId) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const res = await fetch2('https://business.facebook.com/api/graphql/?_flowletID=1', {
-          headers: {
-            'content-type': 'application/x-www-form-urlencoded',
-          },
-          method: 'POST',
-          body:
-            `variables={"paymentAccountID":"${adId}"}` +
-            `&doc_id=5746473718752934` +
-            `&__user=${this.uid}` +
-            `&fb_dtsg=${this.dtsg}` +
-            `&__a=1&__req=s&__rev=1010282616&__spin_r=1010282616&__spin_b=trunk&__spin_t=1702003435`,
-        })
-
-        const json = res.json
-
-        if (json?.errors || json?.error)
-          addToast(`❌ Lỗi lấy thẻ: ${json?.errors?.[0]?.message || json?.error}`, 'error')
-
-        const cards =
-          json.data?.billable_account_by_payment_account?.billing_payment_account
-            ?.billing_payment_methods || []
-        resolve(cards)
-      } catch (err) {
-        reject(err)
-      }
-    })
-  }
 
   getRandomNumber() {
     return Math.floor(Math.random() * 9) + 1
@@ -961,7 +676,7 @@ class FB {
     // Nếu target mới nhỏ hơn current => bỏ qua (hoặc cho phép giảm thì xử lý riêng)
     if (percentTarget <= fb.currentProgress) return
 
-    // Cập nhật target mới
+    // Cập nhật target mới.
     fb.targetProgress = percentTarget
 
     // Nếu chưa có interval thì bắt đầu chạy
@@ -989,7 +704,8 @@ class FB {
         // Hiện tại, chúng ta sẽ tập trung vào luồng chính là tải tất cả tài khoản.
         // Bạn có thể mở rộng các trường hợp `byId`, `byBmId` sau này nếu cần.
         loadingDataAds() // Hiển thị placeholder "Đang tải..."
-        const accounts = await fbtkqc.getAdAccounts(hiddenAccounts, pageCount)
+        const accounts = await this.fbtkqc.getAdAccounts(hiddenAccounts, pageCount);
+        this.fbtkqc.getAdAccountsData(accounts)
         resolve(accounts) // Trả về dữ liệu tài khoản
       } catch (error) {
         console.error('Lỗi trong loadAds:', error)
@@ -1008,9 +724,9 @@ class FB {
         const _0x4e69f4 = await getSetting()
         const _0x32b058 = _0x4e69f4.loadBm?.listBmIds?.value?.split(/\r?\n|\r|\n/g)
         if (_0x4e69f4.loadBm.type.value === 'id') {
-          await fbbm.getBm(_0x4e69f4.loadBm.page.value, _0x32b058)
+          await this.fbbm.getBm(_0x4e69f4.loadBm.page.value, _0x32b058)
         } else {
-          await fbbm.getBm(_0x4e69f4.loadBm.page.value, [])
+          await this.fbbm.getBm(_0x4e69f4.loadBm.page.value, [])
         }
         $(document).trigger('saveData')
 
@@ -1018,274 +734,6 @@ class FB {
       } catch (_0x59fd69) {
         console.log(_0x59fd69)
         _0x54d324(_0x59fd69)
-      }
-    })
-  }
-
-  getPage() {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const pageToBMMap = {}
-        const ownedPageIds = new Set()
-        const allPages = []
-        const bmRes = await fetch2(
-          `https://graph.facebook.com/v17.0/me/businesses?access_token=${fb.accessToken2}`,
-        )
-        const bmJson = await bmRes.json
-        const businessList = bmJson.data || []
-        for (const bm of businessList) {
-          const bmId = bm.id
-          const ownedRes = await fetch2(
-            `https://graph.facebook.com/v19.0/${bmId}?fields=owned_pages.limit(100){id}&access_token=${fb.accessToken2}`,
-          )
-          const ownedJson = await ownedRes.json
-          const ownedPages = ownedJson.owned_pages?.data || []
-
-          for (const page of ownedPages) {
-            pageToBMMap[page.id] = { id: bmId, name: bm.name }
-            ownedPageIds.add(page.id)
-          }
-          const clientRes = await fetch2(
-            `https://graph.facebook.com/v19.0/${bmId}?fields=client_pages.limit(100){id}&access_token=${fb.accessToken2}`,
-          )
-          const clientJson = await clientRes.json
-          const clientPages = clientJson.client_pages?.data || []
-
-          for (const page of clientPages) {
-            if (!ownedPageIds.has(page.id)) {
-              pageToBMMap[page.id] = { id: bmId, name: bm.name }
-            }
-          }
-        }
-        const pageRes = await fetch2(
-          `https://graph.facebook.com/me/accounts?type=page&fields=id,additional_profile_id,birthday,name,likes,followers_count,is_published,page_created_time,business,perms&access_token=${fb.accessToken}`,
-        )
-        const pageJson = await pageRes.json
-        const personalPages = pageJson.data || []
-        const finalPages = personalPages.map((p) => ({
-          id: p.id,
-          name: p.name || '',
-          followers_count: p.followers_count || 0,
-          likes: p.likes || 0,
-          fan_count: p.fan_count || 0,
-          perms: p.perms || [],
-          business: pageToBMMap[p.id] || null,
-          isInvited: !ownedPageIds.has(p.id),
-        }))
-        resolve(finalPages)
-      } catch (err) {
-        console.error('Lỗi getPage:', err)
-        reject(err)
-      }
-    })
-  }
-  getPost(idpages) {
-    return new Promise(async (_0x185a77, _0x2d4926) => {
-      try {
-        const _0x5c31e4 = await fetch2(
-          'https://graph.facebook.com/v16.0/' +
-            idpages +
-            '/posts?fields=call_to_action,message,is_eligible_for_promotion,promotable_id,attachments.limit(10){description,description_tags,media,media_type,target,title,type,subattachments,unshimmed_url,url},likes.summary(total_count),shares,comments.summary(total_count).limit(0)&access_token=' +
-            this.accessToken,
-        )
-        const _0x4d3c45 = _0x5c31e4.json.data
-        _0x185a77(_0x4d3c45)
-      } catch {
-        _0x2d4926()
-      }
-    })
-  }
-  checkPage(_0x2e815e) {
-    return new Promise(async (_0x37c9eb, _0x296c6b) => {
-      let _0xcc6bde = ''
-      try {
-        const _0x17bdcf = await fetch2('https://www.facebook.com/api/graphql/', {
-          headers: {
-            'content-type': 'application/x-www-form-urlencoded',
-          },
-          body:
-            'av=' +
-            fb.uid +
-            '&__user=' +
-            fb.uid +
-            '&__a=1&__req=1&__hs=19552.BP%3ADEFAULT.2.0..0.0&dpr=1&__ccg=GOOD&__rev=1007841040&__s=779bk7%3Adtflwd%3Al2ozr1&__hsi=7255550840262710485&__dyn=7xeUmxa2C5rgydwn8K2abBWqxu59o9E4a2i5VGxK5FEG484S4UKewSAxam4EuGfwnoiz8WdwJzUmxe1kx21FxG9xedz8hwgo5qq3a4EuCwQwCxq1zwCCwjFFpobQUTwJHiG6kE8RoeUKUfo7y78qgOUa8lwWxe4oeUuyo465udz87G5U2dz84a9DxW10wywWjxCU4C5pUao9k2C4oW2e2i3mbxOfxa2y5E5WUru6ogyHwyx6i8wxK2efK2W1dx-q4VEhG7o4O1fwQzUS2W2K4E5yeDyU52dCgqw-z8c8-5aDBwEBwKG13y85i4oKqbDyoOEbVEHyU8U3yDwbm1Lwqp8aE4KeCK2q362u1dxW10w8mu&__csr=&fb_dtsg=' +
-            fb.dtsg +
-            '&jazoest=25578&lsd=pdtuMMg6hmB03Ocb2TuVkx&__spin_r=1007841040&__spin_b=trunk&__spin_t=1689314572&fb_api_caller_class=RelayModern&fb_api_req_friendly_name=AccountQualityHubAssetViewV2Query&variables=%7B%22assetOwnerId%22%3A%22' +
-            fb.uid +
-            '%22%2C%22assetId%22%3A%22' +
-            _0x2e815e +
-            '%22%7D&server_timestamps=true&doc_id=6228297077225495',
-          method: 'POST',
-        })
-        const _0x473f4c = _0x17bdcf.json
-        if (
-          _0x473f4c.data.pageData.advertising_restriction_info.status === 'APPEAL_REJECTED_NO_RETRY'
-        ) {
-          _0xcc6bde = 1
-        }
-        if (_0x473f4c.data.pageData.advertising_restriction_info.status === 'VANILLA_RESTRICTED') {
-          _0xcc6bde = 2
-        }
-        if (_0x473f4c.data.pageData.advertising_restriction_info.status === 'APPEAL_PENDING') {
-          _0xcc6bde = 3
-        }
-        if (_0x473f4c.data.pageData.advertising_restriction_info.status === 'NOT_RESTRICTED') {
-          _0xcc6bde = 4
-        }
-        if (
-          _0x473f4c.data.pageData.advertising_restriction_info.restriction_type ===
-          'BI_IMPERSONATION'
-        ) {
-          _0xcc6bde = 5
-        }
-        if (
-          !_0x473f4c.data.pageData.advertising_restriction_info.is_restricted &&
-          _0x473f4c.data.pageData.advertising_restriction_info.restriction_type === 'ALE'
-        ) {
-          _0xcc6bde = 6
-        }
-      } catch {}
-      _0x37c9eb(_0xcc6bde)
-    })
-  }
-  loadPage(onProgress) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        if (window.pageGridApi) {
-          window.pageGridApi.setRowData([])
-        }
-
-        fb.updateLoadingProgress(35)
-
-        fb.updateLoadingProgress(40)
-        const pageList = await this.getPage()
-        $(document).trigger('loadPageSuccess', [pageList])
-
-        const checkPageStatus = (page) => {
-          return new Promise(async (res) => {
-            try {
-              fb.updateLoadingProgress(50)
-              const status = await this.checkPage(page.id)
-              const data = {
-                id: page.id,
-                status,
-              }
-              $(document).trigger('updatePageStatus', [data])
-            } catch {}
-            res()
-          })
-        }
-
-        fb.updateLoadingProgress(70)
-
-        let pageProcessed = 0
-        const total = pageList.length
-
-        const tasks = pageList.map((page) => {
-          return new Promise(async (res) => {
-            await checkPageStatus(page)
-            pageProcessed++
-
-            if (typeof onProgress === 'function') {
-              onProgress({
-                pageProcessed,
-                total,
-              })
-            }
-
-            res()
-          })
-        })
-
-        await Promise.all(tasks)
-        fb.updateLoadingProgress(90)
-        resolve()
-      } catch (e) {
-        reject(e)
-      }
-    })
-  }
-  loadGroup() {
-    return new Promise(async (_0x3a7875, _0x4a5828) => {
-      try {
-        const _0x1bce61 = (await getLocalStorage('dataGroup_' + fb.uid)) || []
-        if (_0x1bce61.length > 0) {
-          $(document).trigger('loadSavedGroup', [_0x1bce61])
-        } else {
-          const _0x2a2db2 = await this.getGroup()
-          $(document).trigger('loadGroupSuccess', [_0x2a2db2])
-        }
-        _0x3a7875()
-      } catch {
-        _0x4a5828()
-      }
-    })
-  }
-  getInvites() {
-    return new Promise(async (_0x3eccf3, _0x4a86a1) => {
-      let _0xb7785f = []
-      try {
-        const _0x28c2f1 = await fetch2('https://www.facebook.com/api/graphql/', {
-          headers: {
-            'content-type': 'application/x-www-form-urlencoded',
-          },
-          method: 'POST',
-          body:
-            'av=' +
-            this.uid +
-            '&__aaid=0&__user=' +
-            this.uid +
-            '&__a=1&__req=1n&__hs=19809.HYP2%3Acomet_pkg.2.1..2.1&dpr=1&__ccg=GOOD&__rev=1012346269&__s=hlz3t5%3Aqps39g%3Aphae8m&__hsi=7350991099154827576&__dyn=7AzHK4HwBgDx-5Q1ryaxG4Qih09y2O5U4e2CEf9UKbgS3qi7UK360CEboG4E762S1DwUx60xU8k1sw9u0LVEtwMw65xO321Rwwwg8a8462mcw8a1TwgEcEhwGxu782lwj8bU9kbxS210hU31wiE567Udo5qfK0zEkxe2Gexe5E5e7oqBwJK2W5olwUwOzEjUlDw-wQK2616DBx_xWcwoE2mBwFKq2-azo6O14wwwOg2cwMwhEkxebwHwNxe6Uak2-1vwxyo566k1FwgU4q3G3WfKufxa3m7E&__csr=gtgoR2fk4IQZjElbEttlNidNa5h6yN29bOhdvRqaJGBjNQJidZ8Fz9RFGpCkGKJlZ4iOFfFXjmt6GFaFHLt4ABQh4RF997pnjhpGAJER7l5qZCinDRgJkBVanABnh9uZmVppd4QXjLybXvK-KrApp5z8y9FenWRjyBznyFCrGVbGGAAVUTVUgyBhWyV8zxi4p9UqAzUmx2uczrpK-7RCKagCiW-hmcgC4otwNAxeUC4EfF9rUKu9zeexmlabADxycG32E8Qdxi8AwAKFUKUhwyxiu58y2a3y7UmUvg9pHh8lDwhUC5UaJ1ui4-9wLwOwQwKzBwEK8z8KdK5UyUqxO291i4orxuexTAwFxC225EhwtVFA5Egxe3xei8w8Si0jW9KEG4WwUG8h8K2B0Gx0iqaEE8Q3qESB6PRAGl4OQ8AbkJQwyEbonw8aewjA19UaU2MwYgSq9tt1DgCcwjo6q2a0z9rCwLxZx1wbW1owcK19wjA2y58lic3O227Udo6-0HUc8VyHCyFU56Ue-fyqhpU0Li06ro34w32UC1nDw18i8xm0MXwzwcW0fjU6J03dU0P201M8wr804X20H40kyCewh8iBG0rSQ5U5e1lwzg1Fk1awyxu0bdw7tw1Au0P83pw12a68K0LqUqw7hw189wdm0QU0jbw6dwKx61nwlo14Uy0dwg0WW0e5AG0dSo4Whyo3zw1Ni3Nw2041rxe5to2Xwd60mq8yEc8F1504Jziw1iu1Uw16au8w&__comet_req=15&fb_dtsg=' +
-            this.dtsg +
-            '&jazoest=25312&lsd=EM5XT5VIDQF8uzBNd5t2fD&__spin_r=1012346269&__spin_b=trunk&__spin_t=1711535989&fb_api_caller_class=RelayModern&fb_api_req_friendly_name=PageCometLaunchpointInvitesRootQuery&variables=%7B%22id%22%3A%22' +
-            this.uid +
-            '%22%7D&server_timestamps=true&doc_id=7224925170868877',
-        })
-        const _0x5c9af5 = _0x28c2f1.json
-        _0xb7785f = _0x5c9af5.data.user.profile_admin_invites.map((_0x335519) => {
-          const _0x494fa7 = {
-            inviteId: _0x335519.profile_admin_invite_id,
-            pageId: _0x335519.profile_admin_inviter.id,
-          }
-          return _0x494fa7
-        })
-      } catch (_0xcd7e40) {
-        console.log(_0xcd7e40)
-      }
-      _0x3eccf3(_0xb7785f)
-    })
-  }
-  acceptPage(_0x524fee) {
-    return new Promise(async (_0x491c8e, _0x2565f4) => {
-      try {
-        const _0x2a88ef = await fetch2('https://www.facebook.com/api/graphql/', {
-          headers: {
-            'content-type': 'application/x-www-form-urlencoded',
-          },
-          method: 'POST',
-          body:
-            'av=' +
-            this.uid +
-            '&__aaid=0&__user=' +
-            this.uid +
-            '&__a=1&__req=1t&__hs=19809.HYP2%3Acomet_pkg.2.1..2.1&dpr=1&__ccg=GOOD&__rev=1012346269&__s=58dfwt%3Aqps39g%3Ad4ou37&__hsi=7350991530179737815&__dyn=7AzHK4HwkEng5K8G6EjBAg2owIxu13wFwnUW3q2ibwNw9G2Saw8i2S1DwUx60GE3Qwb-q7oc81xoswMwto886C11wBz83WwgEcEhwGxu782lwv89kbxS2218wc61awkovwRwlE-U2exi4UaEW2G1jxS6FobrwKxm5o7G4-5pUfEe88o4Wm7-7EO0-poarCwLyES1Iwh888cA0z8c84q58jyUaUcojxK2B08-269wkopg6C13whEeE4WVU-4Edouw&__csr=gtgoR6itgmjRlEnTIrsKx3dOi8l4qTP8AL9kHvRqayGBjEnOH8T8K8Fd9paDDi8EBRVkLqjW-8m8ypWFADQiimXh8JetCmbDUCPoJ2HozHDHy-mdKaABx24payV8izXLHzobUS7ERwKBGaxqUozosyd2U9FpUO58mx27VEzKU89EWaAKq9zoC18xy68ym1rx62-5ob85a17zk1Txi7898fWxO1HAxS0B81dEiAwCwo88Ukw50w-w7bw5hw1jy0oG0ii1So88mwEwd2037a07j40XpU092U03g4g0TKQ5U5e1lwzg0yO04GU0p7wcO0So04va09Yw0pPk1rxe5to6m1lw2go0sXw3oU&__comet_req=15&fb_dtsg=' +
-            this.dtsg +
-            '&jazoest=25593&lsd=DKpGY6WjRs4LdeRqjPDpX2&__spin_r=1012346269&__spin_b=trunk&__spin_t=1711536089&fb_api_caller_class=RelayModern&fb_api_req_friendly_name=ProfilePlusCometAcceptOrDeclineAdminInviteMutation&variables=%7B%22input%22%3A%7B%22client_mutation_id%22%3A%221%22%2C%22actor_id%22%3A%22' +
-            this.uid +
-            '%22%2C%22is_accept%22%3Atrue%2C%22profile_admin_invite_id%22%3A%22' +
-            _0x524fee.inviteId +
-            '%22%2C%22user_id%22%3A%22' +
-            this.uid +
-            '%22%7D%2C%22scale%22%3A1%2C%22__relay_internal__pv__VideoPlayerRelayReplaceDashManifestWithPlaylistrelayprovider%22%3Afalse%7D&server_timestamps=true&doc_id=25484830601161332',
-        })
-        const _0x51218f = _0x2a88ef.json
-        if (_0x51218f.data.accept_or_decline_profile_plus_admin_invite.id === this.uid) {
-          _0x491c8e()
-        } else {
-          _0x2565f4()
-        }
-      } catch (_0x3169c2) {
-        _0x2565f4(_0x3169c2)
       }
     })
   }
@@ -2145,7 +1593,7 @@ class FB {
             'https://rupload.facebook.com/checkpoint_1501092823525282_media_upload/a06d268a-bad7-49d7-b553-24d6f07c64ba?__usid=6-Tsc6xzrdp0tcu%3APsc78vt5c5znb%3A0-Asc78484bm17t-RV%3D6%3AF%3D&session_id=1f53971e4d475672&__aaid=0&__bid=' +
               _0x1c0400 +
               '&__user=' +
-              fb.uid +
+              this.fb.uid +
               '&__a=1&__req=15&__hs=19832.BP%3ADEFAULT.2.0..0.0&dpr=1&__ccg=EXCELLENT&__rev=1012908546&__s=j9683f%3Abgcl6p%3Avjr471&__hsi=7359625851859447619&__dyn=7xeXxa4EaolJ28S2q3m8G2abBAjxu59o9EeEb8nCG6UmCyEgwjojyUW3qi4FoixWE-1txaczES2SaAxq4U5i48swj8qyoyazoO4o2oCyE9UixWq3i2q5E884a2qq1eCBBwLjzu2SmGxBa2dmm3mbK6U8o7y78jCgOXwAxm3G4UhwXxW9wgo9oO1Wxu0zoO12ypUuyUd88EeAUpK19xmu2C2l0FggzE8U98doJ1Kfxa2y5E6a6TxC48G2q4p8y26U8U-UbE4S4oSq4VEhG7o4O1fwwxefzobElxm4E5yeDyUnwUzpErw-z8c8-5aDwQwKG13y85i4oKqbDyoOFEa9EHyU8U3xhU24wMwrU6CiVo88ak22eCK2q362u1dxW6U98a85Ou3u1Dxeu1owtU&__csr=&fb_dtsg=' +
               fb.dtsg +
               '&jazoest=25676&lsd=6qUyi5kQucC-XaTIr34bGR&__spin_r=1012908546&__spin_b=trunk&__spin_t=1713546424&__jssesw=1&_callFlowletID=3740&_triggerFlowletID=2359',
@@ -3459,15 +2907,106 @@ function getAccountStatusInfo(status) {
 }
 
 export class FBTKQC {
+  constructor(fbInstance) {
+    this.fb = fbInstance
+  }
+
+  checkADSlive(adInfo, _0x4c4040) {
+    return new Promise(async (_0x567957, _0x4cb824) => {
+      let trangThaiTaiKhoan1
+      let trangThaiTaiKhoan2
+      try {
+        const response = await fetch2(
+          'https://graph.facebook.com/v19.0/act_' + // Using fb.accessToken from the outer scope
+            adInfo.adId +
+            '?fields=id,name,currency,adtrust_dsl,adspaymentcycle{threshold_amount},balance,amount_spent,funding_source_details,business_country_code,timezone_name,account_status,spend_cap,created_time,business,business_city,business_name,business_state,business_street,business_street2,business_zip&access_token=' +
+            this.fb.accessToken,
+        )
+        const data = await response.json
+        if (response?.errors ?? response?.error) {
+          addToast(`❌ Lỗi check live: ${error.message || error}`, 'error')
+        }
+        trangThaiTaiKhoan1 = data.account_status;
+        const idBm = $("select[name='accountSelect']").val()
+        const thongTinHold = await this.checkHold(adInfo.adId)
+        // Nếu tài khoản bị hold, đặt trạng thái là 999
+        if (thongTinHold.status) {
+          trangThaiTaiKhoan2 = 999;
+        } else if (idBm != 0) {
+          await delay(400)
+          // Nếu có idBm, kiểm tra trạng thái tài khoản quảng cáo qua API GraphQL
+          const _0x1f0f37 = await fetch2(
+            'https://business.facebook.com/api/graphql/?_callFlowletID=1&_triggerFlowletID=2',
+            {
+              headers: {
+                'content-type': 'application/x-www-form-urlencoded',
+              },
+              body:
+                'av=' +
+                this.fb.uid +
+                '&__usid=6-Tse1ovt1j8u6wd%3APse1oxj1m4rr33%3A0-Ase1ovtochuga-RV%3D6%3AF%3D&session_id=144e97c8e5fc4969&__aaid=' +
+                adInfo.adId +
+                '&__bid=' +
+                idBm +
+                '&__user=' +
+                fb.uid +
+                '&__a=1&__req=1&__hs=19868.BP%3ADEFAULT.2.0..0.0&dpr=1&__ccg=GOOD&__rev=1013767953&__s=qxxa8s%3Ax39hkh%3Apw4cw7&__hsi=7372940659475198570&__dyn=7xeUmxa2C5rgydwn8K2abBAjxu59o9E6u5VGxK5FEG484S4UKewSAxam4EuGfwnoiz8WdwJzUmxe1kx21FxG9xedz8hw9yq3a4EuCwQwCxq1zwCCwjFFpobQUTwJBGEpiwzlwXyXwZwu8sxF3bwExm3G4UhwXxW9wgo9oO1Wxu0zoO12ypUuwg88EeAUpK19xmu2C2l0Fz98W2e2i3mbgrzUiwExq1yxJUpx2awCx6i8wxK2efK2W1dx-q4VEhG7o4O1fwwxefzobEaUiwm8Wubwk8Sq6UfEO32fxiFUd8bGwgUy1kx6bCyUhzawLCyKbwzweau0Jo6-1FAyo884KeCK2q362u1dxW6U98a85Ou0DU7i1TwUw&__csr=&fb_dtsg=' +
+                this.fb.dtsg +
+                '&jazoest=25134&lsd=nZD2aEOcch1tFKEE4sGoAT&__spin_r=1013767953&__spin_b=trunk&__spin_t=1716646518&__jssesw=1&fb_api_caller_class=RelayModern&fb_api_req_friendly_name=AccountQualityHubAssetViewQuery&variables=%7B%22assetOwnerId%22%3A%223365254127037950%22%2C%22assetId%22%3A%22' +
+                adInfo.adId +
+                '%22%2C%22scale%22%3A1%7D&server_timestamps=true&doc_id=6875615999208668',
+              method: 'POST',
+            },
+          )
+          const thongTinChiTiet = _0x1f0f37.json
+          const thongTinHanChe = thongTinChiTiet?.data?.adAccountData?.advertising_restriction_info
+          if (!thongTinHanChe) {
+            trangThaiTaiKhoan2 = null
+          } else {
+            // Kiểm tra các loại hạn chế và đặt trạng thái tương ứng
+            if (
+              thongTinHanChe.ids_issue_type === 'AD_ACCOUNT_ALR_DISABLE' &&
+              thongTinHanChe.status === 'APPEAL_PENDING'
+            ) {
+              trangThaiTaiKhoan2 = 4 // Đang kháng nghị
+            }
+            if (
+              thongTinHanChe.ids_issue_type === 'AD_ACCOUNT_ALR_DISABLE' &&
+              (thongTinHanChe.status === 'VANILLA_RESTRICTED' ||
+                thongTinHanChe.status === 'APPEAL_REJECTED')
+            ) {
+              trangThaiTaiKhoan2 = 5 // Bị hạn chế hoặc kháng nghị bị từ chối
+            }
+            if (
+              thongTinHanChe.ids_issue_type === 'PREHARM_AD_ACCOUNT_BANHAMMER' &&
+              thongTinHanChe.status === 'APPEAL_INCOMPLETE'
+            ) {
+              trangThaiTaiKhoan2 = 6 // Hạn chế chưa hoàn thành kháng nghị
+            }
+            if (
+              thongTinHanChe.ids_issue_type === 'PREHARM_AD_ACCOUNT_BANHAMMER' &&
+              thongTinHanChe.status === 'APPEAL_REJECTED'
+            ) {
+              trangThaiTaiKhoan2 = 7 // Hạn chế và kháng nghị bị từ chối
+            }
+          }
+        }
+      } catch (error) {
+        _0x4c4040('message', { message: 'Check lỗi' })
+        console.log(error)
+      }
+      _0x4c4040('status', { status: [trangThaiTaiKhoan1, trangThaiTaiKhoan2] })
+      _0x567957()
+    })
+  }
+
   getAdAccountsData(_0x68362c, _0x1cb94c = false) {
     return new Promise(async (_0x51fe09, _0x1dacc0) => {
-      $('#app').addClass('loading')
       try {
         const totalAccounts = _0x68362c.length
         const batchSize = 50
         let accountsLoaded = 0
         let startIdx = 0
-
         while (true) {
           const endIdx = startIdx + batchSize
           const currentBatch = _0x68362c.slice(startIdx, endIdx)
@@ -3478,19 +3017,19 @@ export class FBTKQC {
           }
           // Chuẩn bị batch request cho Graph API
           const batchRequests = currentBatch.map((account) => ({
-            id: account.adId,
+            id: account.id,
             relative_url:
               '/act_' +
-              account.adId +
+              account.id +
               '?fields=account_id,name,account_status,is_prepay_account,next_bill_date,balance,owner_business,created_time,currency,adtrust_dsl,timezone_name,timezone_offset_hours_utc,disable_reason,adspaymentcycle{threshold_amount},owner,insights.date_preset(maximum){spend},userpermissions.user(' +
-              fb.uid +
+              this.fb.uid +
               '){role},users{id,is_active,name,permissions,role,roles}',
             method: 'GET',
           }))
           // Gửi request batch tới Graph API
           const response = await fetch2(
             'https://adsmanager-graph.facebook.com/v16.0?access_token=' +
-              fb.accessToken +
+              this.fb.accessToken +
               '&suppress_http_code=1&locale=en_US',
             {
               headers: { 'content-type': 'application/x-www-form-urlencoded' },
@@ -3503,7 +3042,12 @@ export class FBTKQC {
             try {
               if (results[i].code == 200) {
                 const accountData = JSON.parse(results[i].body)
-                const index = _0x68362c.findIndex((acc) => acc.adId === accountData.account_id)
+                // Sửa lỗi: Chuẩn hóa ID trước khi tìm kiếm.
+                // accountData.account_id có dạng "act_123456" còn acc.id chỉ là "123456".
+                const normalizedAdId = accountData.account_id.replace('act_', '');
+                const index = _0x68362c.findIndex((acc) => acc.id === normalizedAdId);
+
+                if (index === -1) continue; // Bỏ qua nếu không tìm thấy tài khoản tương ứng
                 // Format dữ liệu, tính toán các trường cần thiết
                 accountData.limit = accountData.adtrust_dsl
                 accountData.prePay = accountData.is_prepay_account ? 'TT' : 'TS'
@@ -3569,35 +3113,38 @@ export class FBTKQC {
                   8: 'UNUSED_RESELLER_ACCOUNT',
                 }
 
-                accountGrid.api.applyTransaction({
-                  update: [
-                    {
-                      id: _0x68362c[index].id,
-                      status: accountData.account_status,
-                      type: accountData.owner_business ? 'Business' : 'Cá nhân',
-                      reason: reasonMap[accountData.disable_reason],
-                      account: accountData.name,
-                      adId: accountData.account_id,
-                      balance: convertNumberFormat(accountData.balance),
-                      limit: convertNumberFormat(accountData.limit),
-                      spend: convertNumberFormat(accountData.spend),
-                      oriSpend: convertNumberFormat(accountData.spend),
-                      remain: convertNumberFormat(accountData.remain),
-                      threshold: convertNumberFormat(accountData.threshold),
-                      adminNumber: adminNumber,
-                      nextBillDate: nextBillMoment.format('DD/MM/YYYY'),
-                      nextBillDay: daysToNextBill < 0 ? 0 : daysToNextBill,
-                      createdTime: moment(accountData.created_time).format('DD/MM/YYYY'),
-                      timezone: accountData.timezone_name,
-                      currency: accountData.currency,
-                      country: '-',
-                      payment: '-',
-                      prePay: accountData.prePay,
-                      role: accountData.userpermissions?.data[0]?.role || 'UNKNOWN',
-                      bm: accountData.owner_business ? accountData.owner_business.id : null,
-                    },
-                  ],
-                })
+                // Gửi sự kiện tùy chỉnh để cập nhật bảng với dữ liệu mới
+                const updateEvent = new CustomEvent('updateAccountData', {
+                  detail: {
+                    id: _0x68362c[index].id,
+                    status: accountData.account_status,
+                    status: getAccountStatusInfo(accountData.account_status).statusText,
+                    statusClass: getAccountStatusInfo(accountData.account_status).statusClass,
+                    type: accountData.owner_business ? 'Business' : 'Cá nhân',
+                    reason: reasonMap[accountData.disable_reason],
+                    account: accountData.name,
+                    adId: accountData.account_id,
+                    name: accountData.name,
+                    balance: convertNumberFormat(accountData.balance),
+                    limit: convertNumberFormat(accountData.limit),
+                    spend: convertNumberFormat(accountData.spend),
+                    oriSpend: convertNumberFormat(accountData.spend),
+                    remain: convertNumberFormat(accountData.remain),
+                    threshold: convertNumberFormat(accountData.threshold),
+                    adminNumber: adminNumber,
+                    nextBillDate: nextBillMoment.format('DD/MM/YYYY'),
+                    nextBillDay: daysToNextBill < 0 ? 0 : daysToNextBill,
+                    createdTime: moment(accountData.created_time).format('DD/MM/YYYY'),
+                    timezone: accountData.timezone_name,
+                    currency: accountData.currency,
+                    country: '-',
+                    payment: '-',
+                    prePay: accountData.prePay,
+                    role: accountData.userpermissions?.data[0]?.role || 'UNKNOWN',
+                    bm: accountData.owner_business ? accountData.owner_business.id : null,
+                  }
+                });
+                document.dispatchEvent(updateEvent);
               }
             } catch (err) {
               addToast(`❌ Lỗi khi tải tài khoản: ${err.message || err}`, 'error')
@@ -3609,11 +3156,11 @@ export class FBTKQC {
           const fetchExtraData = async (rowId, adId, businessId = false) => {
             try {
               // Giả sử hàm fb.checkHold và fb.getCard có sẵn
-              const holdStatus = await fb.checkHold(adId)
-              await delayTime(3)
+              const holdStatus = await this.checkHold(adId)
+              await delay(3)
               let paymentData = []
               try {
-                const cards = await fb.getCard(adId)
+                const cards = await this.getCard(adId)
                 paymentData =
                   JSON.stringify(
                     cards.filter((c) => c.credential.__typename !== 'StoredBalance'),
@@ -3631,7 +3178,7 @@ export class FBTKQC {
                   'https://business.facebook.com/api/graphql/?_callFlowletID=1&_triggerFlowletID=2',
                   {
                     headers: { 'content-type': 'application/x-www-form-urlencoded' },
-                    body: `av=${fb.uid}&__usid=...&__aaid=${adId}&__bid=${businessId}&__user=${fb.uid}&...`, // Cần thay đúng body request
+                    body: `av=${this.fb.uid}&__usid=...&__aaid=${adId}&__bid=${businessId}&__user=${this.fb.uid}&...`, // Cần thay đúng body request
                     method: 'POST',
                   },
                 )
@@ -3665,10 +3212,16 @@ export class FBTKQC {
                 }
               }
 
-              accountGrid.api.getRowNode(rowId).setDataValue('country', holdStatus.country)
-              accountGrid.api.getRowNode(rowId).setDataValue('payment', paymentData)
+              // Gửi sự kiện để cập nhật từng trường
+              const countryUpdateEvent = new CustomEvent('updateRow', { detail: { id: rowId, field: 'country', value: holdStatus.country } });
+              document.dispatchEvent(countryUpdateEvent);
+
+              const paymentUpdateEvent = new CustomEvent('updateRow', { detail: { id: rowId, field: 'payment', value: paymentData } });
+              document.dispatchEvent(paymentUpdateEvent);
+
               if (specialStatus) {
-                accountGrid.api.getRowNode(rowId).setDataValue('status', specialStatus)
+                const statusUpdateEvent = new CustomEvent('updateRow', { detail: { id: rowId, field: 'status', value: specialStatus } });
+                document.dispatchEvent(statusUpdateEvent);
               }
             } catch (err) {
               addToast(`❌ Lỗi khi tải tài khoản: ${err.message || err}`, 'error')
@@ -3677,13 +3230,8 @@ export class FBTKQC {
 
           currentBatch.forEach((acc) => {
             const businessId = acc.owner_business ? acc.owner_business.id : null
-            promises.push(fetchExtraData(acc.id, acc.adId, businessId))
+            promises.push(fetchExtraData(acc.id, acc.id, businessId))
           })
-          // const tasks = currentBatch.map(acc => {
-          //     const businessId = acc.owner_business?.id || null;
-          //     return () => fetchExtraData(acc.id, acc.adId, businessId);
-          // });
-          // await runWithConcurrencyLimit(tasks, 1);
           await Promise.all(promises)
 
           accountsLoaded += currentBatch.length
@@ -3696,17 +3244,88 @@ export class FBTKQC {
         addToast(`❌ Lỗi khi tải tài khoản: ${err.message || err}`, 'error')
         _0x1dacc0(err)
       }
-      $('#app').removeClass('loading')
     })
   }
 
+  checkHold(_0x4b9fbf) {
+    return new Promise(async (_0x5d57cb, _0x523aca) => {
+      const _0x474516 = {
+        status: false,
+        country: '',
+      }
+      try {
+        const _0x1d0307 = await fetch2('https://business.facebook.com/api/graphql/?_flowletID=1', {
+          headers: {
+            'content-type': 'application/x-www-form-urlencoded',
+          },
+          method: 'POST',
+          body:
+            'av=' +
+            this.fb.uid +
+            '&__usid=6-Ts51f1w1gfkvpj%3APs51f2gvheire%3A0-As51f1wdhal3d-RV%3D6%3AF%3D&__user=' +
+            this.fb.uid +
+            '&__a=1&__req=8&__hs=19693.BP%3ADEFAULT.2.0..0.0&dpr=1&__ccg=EXCELLENT&__rev=1010170946&__s=ew2ohe%3Afdtegc%3A7il5yk&__hsi=7307960693527437806&__dyn=7xe6Eiw_K5U5ObwyyVp6Eb9o6C2i5VGxK7oG484S7UW3qiidBxa7GzU721nzUmxe1Bw8W4Uqx619g5i2i221qwa62qq1eCBBwLghUbpqG6kE8Ro4uUfo7y78qggwExm3G4UhwXwEwlU-0DU2qwgEhxW10wv86eu1fgaohzE8U6q78-3K5E7VxK48W2a4p8y26UcXwAyo98gxu5ogAzEowwwTxu1cwwwzzobEaUiwYwGxe1uwciawaG13xC4oiyVV98OEdEGdwzweau0Jomwm8gU5qi2G1bzEG2q362u1IxK321VDx27o72&__csr=&fb_dtsg=' +
+            this.dtsg +
+            '&jazoest=25595&lsd=_WnEZ0cRpYEKpFXHPcY7Lg&__aaid=' +
+            _0x4b9fbf +
+            '&__spin_r=1010170946&__spin_b=trunk&__spin_t=1701517192&__jssesw=1&fb_api_caller_class=RelayModern&fb_api_req_friendly_name=BillingHubPaymentSettingsViewQuery&variables=%7B%22assetID%22%3A%22' +
+            _0x4b9fbf +
+            '%22%7D&server_timestamps=true&doc_id=6747949808592904',
+        })
+        const _0x5b168b = _0x1d0307.text
+        const _0x1310e0 = _0x5b168b.match(/(?<=\"predicated_business_country_code\":\")[^\"]*/g)
+        if (_0x1310e0[0]) {
+          _0x474516.country = _0x1310e0[0]
+        }
+        if (_0x5b168b.includes('RETRY_FUNDS_HOLD')) {
+          _0x474516.status = true
+        } else {
+          _0x474516.status = false
+        }
+      } catch {
+        _0x474516.status = false
+      }
+      _0x5d57cb(_0x474516)
+    })
+  }
+
+  getCard(adId) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const res = await fetch2('https://business.facebook.com/api/graphql/?_flowletID=1', {
+          headers: {
+            'content-type': 'application/x-www-form-urlencoded',
+          },
+          method: 'POST',
+          body:
+            `variables={"paymentAccountID":"${adId}"}` +
+            `&doc_id=5746473718752934` +
+            `&__user=${this.fb.uid}` +
+            `&fb_dtsg=${this.fb.dtsg}` +
+            `&__a=1&__req=s&__rev=1010282616&__spin_r=1010282616&__spin_b=trunk&__spin_t=1702003435`,
+        })
+
+        const json = res.json
+
+        if (json?.errors || json?.error)
+          addToast(`❌ Lỗi lấy thẻ: ${json?.errors?.[0]?.message || json?.error}`, 'error')
+
+        const cards =
+          json.data?.billable_account_by_payment_account?.billing_payment_account
+            ?.billing_payment_methods || []
+        resolve(cards)
+      } catch (err) {
+        reject(err)
+      }
+    })
+  }
   getAdAccounts(_0x3eb1ec = true, _0x460b62 = 500) {
     return new Promise(async (_0x4a6c72, _0x4e5170) => {
       try {
         loadingDataAds()
         let allAccounts = []
         let _0x276480
-        const accessToken = await getLocalStorage('accessToken')
+        const accessToken = this.fb.accessToken
         const _0x21f1cd = await fetch2(
           'https://graph.facebook.com/v14.0/me/adaccounts?limit=' +
             _0x460b62 +
@@ -3785,7 +3404,7 @@ export class FBTKQC {
                 'https://graph.facebook.com/v14.0/' +
                   _0x44d3a1 +
                   '/' +
-                  _0x1afb39 +
+                  _0x1afb39 + // owned_ad_accounts or client_ad_accounts
                   '?access_token=' +
                   fb.accessToken +
                   '&pretty=1&fields=name,profile_picture,account_id,account_status&limit=100',
@@ -3863,7 +3482,7 @@ export class FBTKQC {
         const graphApiResponse = await fetch2(
           'https://graph.facebook.com/v19.0/act_' +
             _0x434779.adId +
-            '?fields=addrafts%7Bid%7D&access_token=' +
+            '?fields=addrafts%7Bid%7D&access_token=' + // Using fb.accessToken from the outer scope
             fb.accessToken,
         )
         const jsonData = await graphApiResponse.json // Chuyển response thành JSON
@@ -3896,7 +3515,7 @@ export class FBTKQC {
             const _0x325a1d = await fetch2(
               'https://adsmanager-graph.facebook.com/v19.0/' +
                 adidcamp +
-                '/addraft_fragments?_reqName=object%3Aaddraft%2Faddraft_fragments&access_token=' +
+                '/addraft_fragments?_reqName=object%3Aaddraft%2Faddraft_fragments&access_token=' + // Using fb.accessToken from the outer scope
                 fb.accessToken +
                 '&method=post&qpl_active_flow_ids=270209052%2C270220209%2C544221525&qpl_active_flow_instance_ids=270209052_96fa8fd59b37cbf4d4d%2C270220209_96f33fcfb7f1b42f073%2C544221525_96f2e002548c385f3b1%2C544221525_96fc2fa60305d96241f&__cppo=1&_callFlowletID=26&_triggerFlowletID=42206&qpl_active_flow_instance_ids=270220209_96f33fcfb7f1b42f073,544221525_96f2e002548c385f3b1,544221525_96fc2fa60305d96241f',
               {
@@ -3957,7 +3576,7 @@ export class FBTKQC {
             const _0x325a1d2 = await fetch2(
               'https://adsmanager-graph.facebook.com/v19.0/' +
                 adidcamp +
-                '/addraft_fragments?_reqName=object%3Aaddraft%2Faddraft_fragments&access_token=' +
+                '/addraft_fragments?_reqName=object%3Aaddraft%2Faddraft_fragments&access_token=' + // Using fb.accessToken from the outer scope
                 fb.accessToken +
                 '&method=post&qpl_active_flow_ids=270209052%2C270220209%2C544221525&qpl_active_flow_instance_ids=270209052_96fa8fd59b37cbf4d4d%2C270220209_96f33fcfb7f1b42f073%2C544221525_96f2e002548c385f3b1%2C544221525_96fc2fa60305d96241f&__cppo=1&_callFlowletID=26&_triggerFlowletID=42206&qpl_active_flow_instance_ids=270220209_96f33fcfb7f1b42f073,544221525_96f2e002548c385f3b1,544221525_96fc2fa60305d96241f',
               {
@@ -4023,7 +3642,7 @@ export class FBTKQC {
             const _0x325a1d3 = await fetch2(
               'https://adsmanager-graph.facebook.com/v19.0/' +
                 adidcamp +
-                '/addraft_fragments?_reqName=object%3Aaddraft%2Faddraft_fragments&access_token=' +
+                '/addraft_fragments?_reqName=object%3Aaddraft%2Faddraft_fragments&access_token=' + // Using fb.accessToken from the outer scope
                 fb.accessToken +
                 '&method=post&qpl_active_flow_ids=270209052%2C270220209%2C544221525&qpl_active_flow_instance_ids=270209052_96fa8fd59b37cbf4d4d%2C270220209_96f33fcfb7f1b42f073%2C544221525_96f2e002548c385f3b1%2C544221525_96fc2fa60305d96241f&__cppo=1&_callFlowletID=26&_triggerFlowletID=42206&qpl_active_flow_instance_ids=270220209_96f33fcfb7f1b42f073,544221525_96f2e002548c385f3b1,544221525_96fc2fa60305d96241f',
               {
@@ -4091,7 +3710,7 @@ export class FBTKQC {
       let thongTinTheThanhToan = '[]'
       try {
         try {
-          const danhSachTheThanhToan = await fb.getCard(_0x434779.adId)
+          const danhSachTheThanhToan = await this.fb.getCard(_0x434779.adId)
           thongTinTheThanhToan =
             JSON.stringify(
               danhSachTheThanhToan.filter((the) => the.credential.__typename !== 'StoredBalance'),
@@ -4107,7 +3726,7 @@ export class FBTKQC {
       }
 
       const _0x26bc0e = _0x307b45.general.delay.value * 100
-      await delayTime(_0x26bc0e)
+      await delay(_0x26bc0e)
       _0x567957()
     })
   }
@@ -4122,7 +3741,7 @@ export class FBTKQC {
           let thongTinTheThanhToan = '[]'
           try {
             try {
-              // Lấy thông tin thẻ thanh toán của tài khoản quảng cáo
+              // Lấy thông tin thẻ thanh toán của tài khoản quảng cáo.
               const danhSachTheThanhToan = await fb.getCard(_0x434779.adId)
 
               // Lọc bỏ các thẻ có loại 'StoredBalance' và chuyển thành chuỗi JSON
@@ -4149,7 +3768,7 @@ export class FBTKQC {
             'https://business.facebook.com/api/graphql/?_callFlowletID=1&_triggerFlowletID=2',
             {
               headers: {
-                'content-type': 'application/x-www-form-urlencoded',
+                'content-type': 'application/x-www-form-urlencoded', // Using fb.uid, fb.dtsg, and fb.lsd from the outer scope
               },
               method: 'POST',
               body:
@@ -4242,7 +3861,7 @@ export class FBTKQC {
       }
 
       const _0x26bc0e = _0x307b45.general.delay.value * 100
-      await delayTime(_0x26bc0e)
+      await delay(_0x26bc0e)
 
       _0x567957()
     })
@@ -4255,7 +3874,7 @@ export class FBTKQC {
         const response = await fetch2(
           'https://graph.facebook.com/v19.0/act_' +
             adInfo.adId +
-            '?fields=campaigns%7Bdelivery_status,status,effective_status%7D,ads%7Bdelivery_status,%20status,effective_status%7D,adsets.limit(200)%7Bdelivery_status,%20status,effective_status%7D,average_lifetime_campaign_budget,average_lifetime_campaign_group_budget,average_daily_campaign_group_budget,average_daily_campaign_budget&access_token=' +
+            '?fields=campaigns%7Bdelivery_status,status,effective_status%7D,ads%7Bdelivery_status,%20status,effective_status%7D,adsets.limit(200)%7Bdelivery_status,%20status,effective_status%7D,average_lifetime_campaign_budget,average_lifetime_campaign_group_budget,average_daily_campaign_group_budget,average_daily_campaign_budget&access_token=' + // Using fb.accessToken2 from the outer scope
             fb.accessToken2,
         )
         const data = await response.json
@@ -4302,7 +3921,7 @@ export class FBTKQC {
       }
 
       const _0x26bc0e = adsConfig.general.delay.value * 100
-      await delayTime(_0x26bc0e)
+      await delay(_0x26bc0e)
       _0x567957()
     })
   }
@@ -4331,12 +3950,12 @@ export class FBTKQC {
           'https://www.facebook.com/api/graphql/?_callFlowletID=0&_triggerFlowletID=370',
           {
             headers: {
-              'content-type': 'application/x-www-form-urlencoded',
+              'content-type': 'application/x-www-form-urlencoded', // Using fb.uid and fb.dtsg from the outer scope
             },
             body:
               'av=' +
               fb.uid +
-              '&__usid=6-Tsptewb4bad6z%3APsptfos1fajaid%3A0-Asptet91igfuw1-RV%3D6%3AF%3D&session_id=5d3404452e9bd1f&__aaid=0&__user=' +
+              '&__usid=6-Tsptewb4bad6z%3APsptfos1fajaid%3A0-Asptet91igfuw1-RV%3D6%3AF%3D&session_id=5d3404452e9bd1f&__aaid=0&__user=' + // Using fb.uid from the outer scope
               fb.uid +
               '&__a=1&__req=14&__hs=20097.BP%3ADEFAULT.2.0.0.0.0&dpr=1&__ccg=EXCELLENT&__rev=1019227852&__s=0iltbe%3Advrmaz%3A103jkm&__hsi=7457852865934213148&__dyn=7xeUmxa3-Q5E9EdoK2Wmhe2Om2q1Dxuq3O1Fx-ewSAxam4Euxa1twKzobo9E6y4824yoyaxG4o2oCwho5G0O85mqbwgEbUy742ppU467U8o2lxe68a8522m3K7EC11wBz8188O12x67E421uxS1zDwFwBgak1EwRwEwiUmwvDxC48W2a4p8aHwzzXwKwjo9EjxyEtw9O222edwmEiwm8W4U5W0DU-58fU7m1LxW4o-3qazo8U3yDwbm1LwqpbBwwwiUWawCwNwDwr8rwjk1rDw4kwtU5K2G0yVHwwxS&__csr=&fb_dtsg=' +
               fb.dtsg +
@@ -4371,7 +3990,7 @@ export class FBTKQC {
                 '__usid=6-Tsc6xu718a07sn%3APsc6xui6pgn2f%3A0-Asc6xtp1nh4rnc-RV%3D6%3AF%3D&session_id=15e5a69ec0978238&__aaid=0&__bid=' +
                 _0x510fbc +
                 '&__user=' +
-                fb.uid +
+                this.fb.uid +
                 '&__a=1&__req=u&__hs=19832.BP%3ADEFAULT.2.0..0.0&dpr=1&__ccg=EXCELLENT&__rev=1012906458&__s=9ubr7j%3Arv9koe%3Ads4ihh&__hsi=7359564425697670285&__dyn=7xeUmxa2C5rgydwCwRyU8EKmhe5UkBwCwpUnCG6UmCyEgwjojyUW3qi4FoixWE-1txaczES2Sfxq4U5i486C6EC8yEScx60C9EcEixWq3i2q5E6e2qq1eCBBwLjzu2SmGxBa2dmm3mbK6U8o7y78jCgOUa8lwWxe4oeUuyo462mcwuEnw8ScwgECu7E422a3Fe6rwiolDwFwBgak48W2e2i3mbgrzUiwExq1yxJUpx2awCx6i8wxK2efK2W1dx-q4VEhG7o4O1fwwxefzobEaUiwm8Wubwk8Sq6UfEO32fxiFUd8bGwgUy1kx6bCyVUCcG2-qaUK2e0UFU2RwrU6CiVo884KeCK2q362u1dxW6U98a85Ou0DU7i1Tw&__csr=&fb_dtsg=' +
                 fb.dtsg +
                 '&jazoest=25352&lsd=MPaEvH-IKd3rimyUrjtr5C&__spin_r=1012906458&__spin_b=trunk&__spin_t=1713532122&__jssesw=1',
@@ -4396,7 +4015,7 @@ export class FBTKQC {
               },
               method: 'POST',
               body:
-                '__usid=6-Ts2rbmo1223bxs:Ps2rbmm1pafisj:0-As2rbmcwf48js-RV=6:F=&session_id=4d371069f94ed908&__user=' +
+                '__usid=6-Ts2rbmo1223bxs:Ps2rbmm1pafisj:0-As2rbmcwf48js-RV=6:F=&session_id=4d371069f94ed908&__user=' + // Using fb.uid from the outer scope
                 fb.uid +
                 '&__a=1&__req=q&__hs=19649.BP:DEFAULT.2.0..0.0&dpr=1&__ccg=GOOD&__rev=1009336620&__s=vkojb0:tpoa7e:m367w6&__hsi=7291509895584633584&__dyn=7xeUmxa2C5rgydwCwRyU8EKnFG5UkBwCwgE98nCG6UmCyEgwjojyUW3qi4FoixWE-1txaczES2Sfxq4U5i486C6EC8yEScx611wlFEcEixWq3i2q5E6e2qq1eCBBwLjzu2SmGxBa2dmm3mbK6U8o7y78jCgOUa8lwWxe4oeUuyo465udz87G5U2dz84a9DxW10wywWjxCU4C5pUao9k2B12ewzwAwRyUszUiwExq1yxJUpx2aK2a4p8y26U8U-UbE4S7VEjCx6Etwj84-3ifzobEaUiwm8Wubwk8Sp1G3WcwMzUkGum2ym2WE4e8wl8hyVEKu9zawLCyKbwzwi82pDwbm1Lx3wlFbBwwwiUWqU9Eco9U4S7ErwAwEwn9U&__csr=&fb_dtsg=' +
                 fb.dtsg +
@@ -4421,7 +4040,7 @@ export class FBTKQC {
               },
               method: 'POST',
               body:
-                '__usid=6-Ts32udfp2ieqb%3APs32udrqbzoxh%3A0-As32ud2p8mux0-RV%3D6%3AF%3D&session_id=2478ab408501cdea&__user=' +
+                '__usid=6-Ts32udfp2ieqb%3APs32udrqbzoxh%3A0-As32ud2p8mux0-RV%3D6%3AF%3D&session_id=2478ab408501cdea&__user=' + // Using fb.uid from the outer scope
                 fb.uid +
                 '&__a=1&__req=u&__hs=19655.BP%3ADEFAULT.2.0..0.0&dpr=1&__ccg=GOOD&__rev=1009465523&__s=417qpb%3Alchip2%3Ayq4pb1&__hsi=7293818531390316856&__dyn=7xeUmxa2C5rgydwCwRyU8EKnFG5UkBwCwgE98nCG6UmCyEgwjojyUW3qi4FoixWE-1txaczES2Sfxq4U5i486C6EC8yEScx611wlFEcEixWq3i2q5E6e2qq1eCBBwLjzu2SmGxBa2dmm3mbK6U8o7y78jCgOUa8lwWxe4oeUuyo465udz87G5U2dz84a9DxW10wywWjxCU4C5pUao9k2B12ewzwAwRyUszUiwExq1yxJUpx2aK2a4p8y26U8U-UbE4S7VEjCx6Etwj84-3ifzobEaUiwm8Wubwk8Sp1G3WcwMzUkGum2ym2WE4e8wl8hyVEKu9zawLCyKbwzwi82pDwbm15wFx3wlFbBwwwiUWqU9Eco9U4S7ErwAwEwn9U2vw&__csr=&fb_dtsg=' +
                 fb.dtsg +
@@ -4447,7 +4066,7 @@ export class FBTKQC {
           'https://graph.facebook.com/v14.0/act_' +
             _0x119fdf +
             '/users/' +
-            _0x375ca4 +
+            _0x375ca4 + // user id
             '?method=DELETE&access_token=' +
             fb.accessToken,
         )
@@ -4469,7 +4088,7 @@ export class FBTKQC {
         const _0x193716 = await fetch2(
           'https://graph.facebook.com/v16.0/act_' +
             _0x45b509 +
-            '?access_token=' +
+            '?access_token=' + // Using fb.accessToken from the outer scope
             fb.accessToken +
             '&__cppo=1&__activeScenarioIDs=[]&__activeScenarios=[]&__interactionsMetadata=[]&_reqName=adaccount&fields=["users{id,is_active,name,permissions,role,roles}"]&locale=en_US&method=get&pretty=0&suppress_http_code=1&xref=f3b1944e6a8b33c&_flowletID=1',
         )
@@ -4700,7 +4319,7 @@ export class FBTKQC {
             'https://business.secure.facebook.com/ajax/payment/token_proxy.php?tpe=%2Fapi%2Fgraphql%2F&_flowletID=5602',
             {
               headers: {
-                'content-type': 'application/x-www-form-urlencoded',
+                'content-type': 'application/x-www-form-urlencoded', // Using fb.uid and fb.dtsg from the outer scope
               },
               body:
                 'av=' +
@@ -4739,7 +4358,7 @@ export class FBTKQC {
             'https://adsmanager.secure.facebook.com/ajax/payment/token_proxy.php?tpe=%2Fapi%2Fgraphql%2F&_flowletID=8308',
             {
               headers: {
-                'content-type': 'application/x-www-form-urlencoded',
+                'content-type': 'application/x-www-form-urlencoded', // Using fb.uid and fb.dtsg from the outer scope
               },
               body:
                 'av=' +
@@ -4778,7 +4397,7 @@ export class FBTKQC {
             'https://business.secure.facebook.com/ajax/payment/token_proxy.php?tpe=%2Fapi%2Fgraphql%2F&_flowletID=3823',
             {
               headers: {
-                'content-type': 'application/x-www-form-urlencoded',
+                'content-type': 'application/x-www-form-urlencoded', // Using fb.uid and fb.dtsg from the outer scope
               },
               body:
                 'av=' +
@@ -4817,7 +4436,7 @@ export class FBTKQC {
             'https://adsmanager.secure.facebook.com/ajax/payment/token_proxy.php?tpe=%2Fapi%2Fgraphql%2F&_flowletID=3674',
             {
               headers: {
-                'content-type': 'application/x-www-form-urlencoded',
+                'content-type': 'application/x-www-form-urlencoded', // Using fb.uid and fb.dtsg from the outer scope
               },
               body:
                 'av=' +
@@ -5781,7 +5400,7 @@ export class FBTKQC {
             'https://business.facebook.com/api/graphql/?_callFlowletID=5681&_triggerFlowletID=1',
             {
               headers: {
-                'content-type': 'application/x-www-form-urlencoded',
+                'content-type': 'application/x-www-form-urlencoded', // Using fb.uid and fb.dtsg from the outer scope
               },
               body:
                 'av=' +
@@ -6447,8 +6066,11 @@ export class FBTKQC {
     })
   }
 }
-fbtkqc = new FBTKQC()
 class FBBM {
+  constructor(fbInstance) {
+    this.fb = fbInstance
+  }
+
   getBmOwnedAccount(_0x22e8e4) {
     return new Promise(async (_0xf8e2ab, _0x2b784c) => {
       const _0x498bf4 = []
@@ -6457,7 +6079,7 @@ class FBBM {
           'https://graph.facebook.com/v17.0/' +
             _0x22e8e4 +
             '/owned_ad_accounts?fields=adtrust_dsl,currency,account_status&limit=100&access_token=' +
-            fb.accessToken,
+            this.fb.accessToken,
         )
         const _0x2cb35e = _0x12726f.json
         _0x2cb35e.data.forEach((_0x33d03a) => {
@@ -6466,7 +6088,7 @@ class FBBM {
         let _0x372670 = _0x2cb35e.paging.next
         if (_0x372670) {
           for (let _0xc7dfda = 0; _0xc7dfda < 9999; _0xc7dfda++) {
-            const _0x2ba780 = await fetch2(_0x372670)
+            const _0x2ba780 = await fetch2(_0x372670);
             const _0xf3aa36 = _0x2ba780.json
             if (_0xf3aa36.data) {
               _0xf3aa36.data.forEach((_0x4f7a6a) => {
@@ -6492,7 +6114,7 @@ class FBBM {
           'https://graph.facebook.com/v17.0/' +
             _0x177019 +
             '/client_ad_accounts?fields=account_status&limit=100&access_token=' +
-            fb.accessToken,
+            this.fb.accessToken,
         )
         const _0x264c47 = _0x1e8701.json
         _0x264c47.data.forEach((_0x54388f) => {
@@ -6501,7 +6123,7 @@ class FBBM {
         let _0x5f3459 = _0x264c47.paging.next
         if (_0x5f3459) {
           for (let _0x29b3ae = 0; _0x29b3ae < 9999; _0x29b3ae++) {
-            const _0x2fd573 = await fetch2(_0x5f3459)
+            const _0x2fd573 = await fetch2(_0x5f3459);
             const _0x17b26b = _0x2fd573.json
             if (_0x17b26b.data) {
               _0x17b26b.data.forEach((_0x304bd3) => {
@@ -6568,7 +6190,7 @@ class FBBM {
             },
             referrer: 'https://business.facebook.com',
             referrerPolicy: 'strict-origin-when-cross-origin',
-            body: '__a=1&fb_dtsg=' + fb.dtsg + '&lsd=' + fb.lsd,
+            body: '__a=1&fb_dtsg=' + this.fb.dtsg + '&lsd=' + this.fb.lsd,
             method: 'POST',
           },
         )
@@ -6618,9 +6240,9 @@ class FBBM {
                 },
                 body:
                   '__a=1&fb_dtsg=' +
-                  fb.dtsg +
+                  this.fb.dtsg +
                   '&lsd=' +
-                  fb.lsd +
+                  this.fb.lsd +
                   '&locale=en_US&dpr=1&variables={"id":' +
                   _0x37dcc0.bmId +
                   '}&doc_id=7820136481365487&server_timestamps=true',
@@ -6798,7 +6420,7 @@ class FBBM {
           'https://graph.facebook.com/v14.0/me/businesses?fields=name,id,is_disabled_for_integrity_reasons,verification_status,business_users,allow_page_management_in_www,sharing_eligibility_status,created_time,permitted_roles&limit=' +
             _0x30626b +
             '&access_token=' +
-            fb.accessToken,
+            this.fb.accessToken,
         )
         const _0x1b1d29 = _0x4ce527.json
         if (_0x1b1d29.data.length) {
@@ -6978,7 +6600,7 @@ class FBBM {
                         body:
                           'av=' +
                           fb.uid +
-                          '&__usid=6-Ts626y2arz8fg%3APs626xy1mafk6f%3A0-As626x5t9hdw-RV%3D6%3AF%3D&session_id=3f06e26e24310de8&__user=' +
+                  '&__usid=6-Ts626y2arz8fg%3APs626xy1mafk6f%3A0-As626x5t9hdw-RV%3D6%3AF%3D&session_id=3f06e26e24310de8&__user=' + // Using fb.uid and fb.dtsg from the outer scope
                           fb.uid +
                           '&__a=1&__req=1&__hs=19713.BP%3ADEFAULT.2.0..0.0&dpr=1&__ccg=EXCELLENT&__rev=1010574318&__s=bgx31o%3A93y1un%3Aj1i0y0&__hsi=7315329750708113449&__dyn=7xeUmxa2C5ryoS1syU8EKmhG5UkBwqo98nCG6UmCyEgwjojyUW3qi4FoixWE-1txaczEeU-5Ejwl8gwqoqyojzoO4o2oCwOxa7FEd89EmwoU9FE4Wqmm2ZedUbpqG6kE8RoeUKUfo7y78qgOUa8lwWxe4oeUuyo465o-0xUnw8ScwgECu7E422a3Gi6rwiolDwjQ2C4oW2e1qyQ6U-4Ea8mwoEru6ogyHwyx6i8wxK3eUbE4S7VEjCx6Etwj84-224U-dwKwHxa1ozFUK1gzpErw-z8c89aDwKBwKG13y85i4oKqbDyoOEbVEHyU8U3yDwbm1Lx3wlF8C221bzFHwCwNwDwjouxK2i2y1sDw9-&__csr=&fb_dtsg=' +
                           fb.dtsg +
@@ -7098,7 +6720,7 @@ class FBBM {
                             '&last_name=' +
                             randomNumberRange(11111, 99999) +
                             '&invitation_token=' +
-                            _0x8dbc6f +
+            _0x8dbc6f + // Using fb.userInfo and fb.dtsg from the outer scope
                             '&receive_marketing_messages=false&user_preferred_business_email&__user=' +
                             fb.userInfo.id +
                             '&__a=1&__req=2&__hs=19664.BP%3ADEFAULT.2.0..0.0&dpr=1&__ccg=GOOD&__rev=1009675755&__s=voml6w%3Aorwnqa%3A3cyaaa&__hsi=7297248857485608221&__dyn=7xeUmwkHgydwn8K2WnFwn84a2i5U4e1Fx-ewSwMxW0DUS2S0lW4o3Bw5VCwjE3awbG78b87C1xwEwlU-0nS4o5-1uwbe2l0Fwwwi85W0_Ugw9KfwbK0RE5a1qwqU8E5W0HUvw5rwSxy0gq0Lo6-1FwbO0NE1rE&__csr=&fb_dtsg=' +
@@ -7129,7 +6751,7 @@ class FBBM {
             }
           }
           await Promise.all(_0x5c701a)
-          if (_0x4a23bf.length > 0) {
+          if (_0x4a23bf.length > 0) { // This seems to be always true if the loop runs
             $(document).trigger('updateLinkAll', [_0x4a23bf])
           }
           if (_0x204386.length > 0) {
@@ -7145,7 +6767,7 @@ class FBBM {
       $(document).trigger('checkProcess', [
         'Nhận thành công: <strong>' + _0x28b659 + '/' + _0x2ed220.length + '</strong> link',
       ])
-      await delayTime(3000)
+      await delay(3000)
       _0x397fb9()
     })
   }
@@ -7157,7 +6779,7 @@ class FBBM {
           'https://graph.facebook.com/v17.0/act_' +
             _0x3db7c7 +
             '/agencies?access_token=' +
-            fb.accessToken +
+            this.fb.accessToken +
             '&_callFlowletID=21473&_triggerFlowletID=21459',
           {
             headers: {
@@ -7209,7 +6831,7 @@ class FBBM {
               body:
                 'av=' +
                 fb.uid +
-                '&session_id=17e613b789f86fcc&__aaid=0&__bid=' +
+                  '&session_id=17e613b789f86fcc&__aaid=0&__bid=' + // Using fb.uid, fb.dtsg, and fb.lsd from the outer scope
                 _0x33f1ef +
                 '&__user=' +
                 fb.uid +
@@ -7236,15 +6858,15 @@ class FBBM {
               },
               body:
                 'av=' +
-                fb.uid +
-                '&session_id=1b39647eb945a644&__aaid=0&__bid=' +
+                  this.fb.uid +
+                  '&session_id=17e613b789f86fcc&__aaid=0&__bid=' +
                 _0x33f1ef +
                 '&__user=' +
-                fb.uid +
+                  this.fb.uid +
                 '&__a=1&__req=i&__hs=20151.BP:DEFAULT.2.0...0&dpr=1&__ccg=GOOD&__rev=1020564878&__s=g139k8:103eex:hwphka&__hsi=7477845871681707178&__dyn=7xeUmxa3-Q5E9EdoK2Wmhe2Om2q1Dxuq3O1Fx-ewSxum4Euxa0z8S2S2q1Ex20zEyaxG4o2oCwho5G0O85mqbwgEbUy742ppU467U8o2lxe68a8522m3K7EC1Dw4WwgEhxW10wnEtwoVUao9k2B0q85W1bxq1-orx2ewyx6i2GU8U-UbE4S2q4UoG7o2swh8S1qxa1ozEjwnE2Lxi3-1RwrUux616yES2e0UFU2RwrU6CiU9E4KeyE9Eco9U6O6U4R0mVU1587u1rwc6227o&__csr=&fb_dtsg=' +
-                fb.dtsg +
+                  this.fb.dtsg +
                 '&jazoest=25762&lsd=' +
-                fb.lsd +
+                  this.fb.lsd +
                 '&__spin_r=1020564878&__spin_b=trunk&__spin_t=1741071667&__jssesw=1&fb_api_caller_class=RelayModern&fb_api_req_friendly_name=CometIXTFacebookXfacActorAppealTriggerRootQuery&variables={"input":{"trigger_event_type":"XFAC_ACTOR_APPEAL_ENTRY","ufac_design_system":"GEODESIC","xfac_id":"' +
                 _0x9eb1bb +
                 '","nt_context":null,"trigger_session_id":"d289e01d-ffc9-43ef-905b-0ee4a5807fd5"},"scale":1}&server_timestamps=true&doc_id=29439169672340596',
@@ -7270,7 +6892,7 @@ class FBBM {
               body:
                 'av=' +
                 fb.uid +
-                '&__usid=6-Ts626y2arz8fg%3APs626xy1mafk6f%3A0-As626x5t9hdw-RV%3D6%3AF%3D&session_id=3f06e26e24310de8&__user=' +
+                '&__usid=6-Ts626y2arz8fg%3APs626xy1mafk6f%3A0-As626x5t9hdw-RV%3D6%3AF%3D&session_id=3f06e26e24310de8&__user=' + // Using fb.uid and fb.dtsg from the outer scope
                 fb.uid +
                 '&__a=1&__req=1&__hs=19713.BP%3ADEFAULT.2.0..0.0&dpr=1&__ccg=EXCELLENT&__rev=1010574318&__s=bgx31o%3A93y1un%3Aj1i0y0&__hsi=7315329750708113449&__dyn=7xeUmxa2C5ryoS1syU8EKmhG5UkBwqo98nCG6UmCyEgwjojyUW3qi4FoixWE-1txaczEeU-5Ejwl8gwqoqyojzoO4o2oCwOxa7FEd89EmwoU9FE4Wqmm2ZedUbpqG6kE8RoeUKUfo7y78qgOUa8lwWxe4oeUuyo465o-0xUnw8ScwgECu7E422a3Gi6rwiolDwjQ2C4oW2e1qyQ6U-4Ea8mwoEru6ogyHwyx6i8wxK3eUbE4S7VEjCx6Etwj84-224U-dwKwHxa1ozFUK1gzpErw-z8c89aDwKBwKG13y85i4oKqbDyoOEbVEHyU8U3yDwbm1Lx3wlF8C221bzFHwCwNwDwjouxK2i2y1sDw9-&__csr=&fb_dtsg=' +
                 fb.dtsg +
@@ -7299,7 +6921,7 @@ class FBBM {
                 '__usid=6-Tsc6xu718a07sn%3APsc6xui6pgn2f%3A0-Asc6xtp1nh4rnc-RV%3D6%3AF%3D&session_id=15e5a69ec0978238&__aaid=0&__bid=' +
                 _0x33f1ef +
                 '&__user=' +
-                fb.uid +
+                this.fb.uid +
                 '&__a=1&__req=u&__hs=19832.BP%3ADEFAULT.2.0..0.0&dpr=1&__ccg=EXCELLENT&__rev=1012906458&__s=9ubr7j%3Arv9koe%3Ads4ihh&__hsi=7359564425697670285&__dyn=7xeUmxa2C5rgydwCwRyU8EKmhe5UkBwCwpUnCG6UmCyEgwjojyUW3qi4FoixWE-1txaczES2Sfxq4U5i486C6EC8yEScx60C9EcEixWq3i2q5E6e2qq1eCBBwLjzu2SmGxBa2dmm3mbK6U8o7y78jCgOUa8lwWxe4oeUuyo462mcwuEnw8ScwgECu7E422a3Fe6rwiolDwFwBgak48W2e2i3mbgrzUiwExq1yxJUpx2awCx6i8wxK2efK2W1dx-q4VEhG7o4O1fwwxefzobEaUiwm8Wubwk8Sq6UfEO32fxiFUd8bGwgUy1kx6bCyVUCcG2-qaUK2e0UFU2RwrU6CiVo884KeCK2q362u1dxW6U98a85Ou0DU7i1Tw&__csr=&fb_dtsg=' +
                 fb.dtsg +
                 '&jazoest=25352&lsd=MPaEvH-IKd3rimyUrjtr5C&__spin_r=1012906458&__spin_b=trunk&__spin_t=1713532122&__jssesw=1',
@@ -7334,24 +6956,24 @@ class FBBM {
       try {
         const _0x5b25b5 = await fetch2(
           'https://graph.facebook.com/v17.0/' +
-            fb.uid +
+            this.fb.uid + // Using this.fb.uid instead of fb.uid
             '/businesses?access_token=' +
-            fb.accessToken +
+            this.fb.accessToken +
             '&__cppo=1',
           {
             headers: {
               'content-type': 'application/x-www-form-urlencoded',
-            },
+            }, // Using fb.uid, fb.dtsg, and fb.lsd from the outer scope
             method: 'POST',
             body:
               '__activeScenarioIDs=%5B%5D&__activeScenarios=%5B%5D&__interactionsMetadata=%5B%5D&_reqName=path%3A%2F' +
               fb.uid +
               '%2Fbusinesses&_reqSrc=adsDaoGraphDataMutator&business=' +
-              _0x40b858 +
+              _0x40b858 + // bmId
               '&endpoint=%2F' +
               fb.uid +
               '%2Fbusinesses&locale=vi_VN&method=delete&pretty=0&suppress_http_code=1&userID=' +
-              fb.uid +
+              this.fb.uid +
               '&version=17.0&xref=f2e80f8533bb1f4',
           },
         )
@@ -7373,7 +6995,7 @@ class FBBM {
           'https://graph.facebook.com/v17.0/' +
             _0x471e38 +
             '/pending_users?access_token=' +
-            fb.accessToken +
+            this.fb.accessToken +
             '&__cppo=1&_reqName=object%3Abusiness%2Fpending_users&_reqSrc=BusinessConnectedPendingUsersStore.brands&date_format=U&fields=%5B%22id%22%2C%22role%22%2C%22email%22%2C%22decrypted_email%22%2C%22invite_link%22%2C%22invited_user_type%22%2C%22status%22%2C%22permitted_business_account_task_ids%22%2C%22sensitive_action_reviews%22%5D&limit=9999&locale=vi_VN&method=get&pretty=0&sort=name_ascending&suppress_http_code=1&xref=f0e174657d4c29859&_flowletID=1&_triggerFlowletID=2',
         )
         const _0x1204ac = _0x2e485f.json
@@ -7389,7 +7011,7 @@ class FBBM {
                   'https://graph.facebook.com/v17.0/' +
                     _0x51e40a +
                     '?access_token=' +
-                    fb.accessToken +
+                    this.fb.accessToken +
                     '&__cppo=1&_flowletID=2480&_triggerFlowletID=2480',
                   {
                     headers: {
@@ -7433,7 +7055,7 @@ class FBBM {
           'https://graph.facebook.com/v17.0/' +
             _0xcb2334 +
             '/adaccount?access_token=' +
-            fb.accessToken +
+            this.fb.accessToken +
             '&_callFlowletID=6343&_triggerFlowletID=6343',
           {
             headers: {
@@ -7473,7 +7095,7 @@ class FBBM {
           'https://z-p3-graph.facebook.com/v17.0/' +
             _0x4c079e +
             '/adaccount?access_token=' +
-            fb.accessToken +
+            this.fb.accessToken + // Using this.fb.accessToken
             '&__cppo=1',
           {
             headers: {
@@ -7510,9 +7132,9 @@ class FBBM {
                   '&roles[0]=151821535410699&roles[1]=610690166001223&roles[2]=864195700451909&roles[3]=186595505260379&user_ids[0]=' +
                   _0x1a9699.id +
                   '&__user=' +
-                  fb.uid +
+                  this.fb.uid +
                   '&__a=1&__req=t&__hs=19662.BP%3Abrands_pkg.2.0..0.0&dpr=1&__ccg=GOOD&__rev=1009606682&__s=2zimvz%3A8blg31%3A9mxlfz&__hsi=7296403044252789266&__dyn=7xeUmxa2C5rgydwCwRyU8EKnFG5UkBwCwgE98nCG6UmCyE4a6UjyUV0RAAzpoixW4E5S7UWdwJwCwq8gwqoqyoyazoO4o461twOxa7FEd89EmwoU9FE4WqbwLjzobVqG6k2ppUdoKUrwxwu8sxe5bwExm3G2m3K2y3WElUScwuEnw8ScwgECu7E422a3Fe6rwnVU8FE9k2B12ewi8doa84K5E6a6S6UgyHwyx6i8wxK2efK7UW1dxacCxeq4o884O1fAwLzUS2W2K4E5yeDyU52dCgqw-z8K2ifxiFVoa9obGwSz8y1kx6bCyVUCfwLCyKbwzweau1Hwio4m2C4e1mAK2q1bzFHwCwmo4S7ErwAwEwn82Dw&__csr=&fb_dtsg=' +
-                  fb.dtsg +
+                  this.fb.dtsg +
                   '&jazoest=25484&lsd=M7V3k5fl_jTcOKm-KVKVe3&__aaid=0&__bid=' +
                   _0x4c079e +
                   '&__spin_r=1009606682&__spin_b=trunk&__spin_t=1698826216&__jssesw=1',
@@ -7749,7 +7371,7 @@ class FBBM {
                 break
               }
             } catch {}
-            await delayTime(2000)
+            await delay(2000)
           }
           if (_0xcdc78d) {
             const _0x6ac5be = await fetch2(
@@ -7802,11 +7424,11 @@ class FBBM {
           'https://business.facebook.com/api/graphql/?_callFlowletID=0&_triggerFlowletID=3129',
           {
             headers: {
-              'content-type': 'application/x-www-form-urlencoded',
+                'content-type': 'application/x-www-form-urlencoded',
             },
             body:
               'av=' +
-              fb.uid +
+                this.fb.uid +
               '&__usid=6-Tsmxjub117xs4l%3APsmxjw7sgqyks%3A0-Asmxjub15hrye4-RV%3D6%3AF%3D&__aaid=0&__bid=' +
               _0x2f5ce8 +
               '&__user=' +
@@ -7841,7 +7463,7 @@ class FBBM {
             },
             body:
               'av=' +
-              fb.uid +
+              this.fb.uid +
               '&__usid=6-Tsasm111tcohsq%3APsasm0z1lqubxp%3A0-Asasjvisjl1bu-RV%3D6%3AF%3D&__aaid=0&__bid=' +
               _0x1051c2 +
               '&__user=' +
@@ -7902,8 +7524,8 @@ class FBBM {
           const _0x5a7be2 = await fetch2(
             'https://graph.facebook.com/v17.0/' +
               _0x2ef39b +
-              '/business_users?access_token=' +
-              fb.accessToken +
+              '/business_users?access_token=' + // Using this.fb.accessToken
+              this.fb.accessToken +
               '&_reqName=object%3Abusiness%2Fbusiness_users&_reqSrc=BusinessConnectedConfirmedUsersStore.brands&date_format=U&fields=%5B%22email%22%2C%22expiry_time%22%2C%22first_name%22%2C%22finance_permission%22%2C%22developer_permission%22%2C%22ip_permission%22%2C%22partner_center_admin_permission%22%2C%22partner_center_analyst_permission%22%2C%22partner_center_education_permission%22%2C%22partner_center_marketing_permission%22%2C%22partner_center_operations_permission%22%2C%22last_name%22%2C%22manage_page_in_www%22%2C%22marked_for_removal%22%2C%22pending_email%22%2C%22role%22%2C%22two_fac_status%22%2C%22is_two_fac_blocked%22%2C%22is_trusted_approver%22%2C%22was_integrity_demoted%22%2C%22sso_migration_status%22%2C%22backing_user_type%22%2C%22business_role_request.fields(creation_source.fields(name)%2Ccreated_by.fields(name)%2Ccreated_time%2Cupdated_time)%22%2C%22transparency_info_seen_by%22%2C%22work_profile_pic%22%2C%22is_pending_integrity_review%22%2C%22is_ineligible_developer%22%2C%22last_active_time%22%2C%22permitted_business_account_task_ids%22%2C%22sensitive_action_reviews%22%2C%22name%22%5D&limit=9999&locale=en_GB&method=get&pretty=0&sort=name_ascending&suppress_http_code=1&xref=f1ef8e0e120281148&_callFlowletID=0&_triggerFlowletID=1',
           )
           const _0x5ddd0f = _0x5a7be2.json
@@ -7956,7 +7578,7 @@ class FBBM {
           'https://z-p3-graph.facebook.com/v3.0/' +
             _0xb2a59d +
             '/business_users?access_token=' +
-            fb.accessToken +
+            this.fb.accessToken + // Using this.fb.accessToken
             '&__cppo=1',
           {
             headers: {
@@ -7997,7 +7619,7 @@ class FBBM {
               },
               body:
                 'av=' +
-                fb.uid +
+                this.fb.uid +
                 '&__usid=6-Tsks7l51qspa42%3APsks8ds1thfd9m%3A0-Asks7awg66ikg-RV%3D6%3AF%3D&__aaid=0&__bid=' +
                 _0x3ffd0e.bmId +
                 '&__user=' +
@@ -8043,7 +7665,7 @@ class FBBM {
               },
               body:
                 'av=' +
-                fb.uid +
+                this.fb.uid +
                 '&__usid=6-Tsks7l51qspa42%3APsks8noocox52%3A0-Asks7awg66ikg-RV%3D6%3AF%3D&__aaid=0&__bid=' +
                 _0x3ffd0e.bmId +
                 '&__user=' +
@@ -8082,11 +7704,11 @@ class FBBM {
               'https://business.facebook.com/api/graphql/?_callFlowletID=5894&_triggerFlowletID=5890',
               {
                 headers: {
-                  'content-type': 'application/x-www-form-urlencoded',
+                'content-type': 'application/x-www-form-urlencoded',
                 },
                 body:
                   'av=' +
-                  fb.uid +
+                this.fb.uid +
                   '&__usid=6-Tsks9ku1odjn08%3APsks9ku1m32dt7%3A0-Asks7awg66ikg-RV%3D6%3AF%3D&__aaid=0&__bid=' +
                   _0x3ffd0e.bmId +
                   '&__user=' +
@@ -8118,7 +7740,7 @@ class FBBM {
           'https://z-p3-graph.facebook.com/v17.0/' +
             _0x5dc939 +
             '?access_token=' +
-            fb.accessToken +
+            this.fb.accessToken + // Using this.fb.accessToken
             '&__cppo=1',
           {
             headers: {
@@ -8154,8 +7776,8 @@ class FBBM {
         const _0x474891 = await fetch2(
           'https://graph.facebook.com/v17.0/' +
             _0x5cab30 +
-            '?access_token=' +
-            fb.accessToken +
+            '?access_token=' + // Using this.fb.accessToken
+            this.fb.accessToken +
             '&_flowletID=10926&_triggerFlowletID=10926',
           {
             headers: {
@@ -8202,8 +7824,8 @@ class FBBM {
             const _0x19e1e3 = await fetch2(
               'https://graph.facebook.com/v17.0/' +
                 _0x11e19e +
-                '/instagram_accounts?access_token=' +
-                fb.accessToken +
+                '/instagram_accounts?access_token=' + // Using this.fb.accessToken
+                this.fb.accessToken +
                 '&_flowletID=5310&_triggerFlowletID=5310',
               {
                 headers: {
@@ -8223,7 +7845,7 @@ class FBBM {
           } catch (_0x80afee) {
             console.log(_0x80afee)
           }
-          await delayTime(2000)
+          await delay(2000)
         }
         _0x326a4c('Xóa thành công' + _0x4ca507 + '/' + _0x4d6504.data.length + 'tài khoản IG')
       } catch {}
@@ -8240,8 +7862,8 @@ class FBPAGE {
             'content-type': 'application/x-www-form-urlencoded',
           },
           method: 'POST',
-          body:
-            'av=' +
+          body: // Using dtsg from the parameter
+            'av=' + // Using this.fb.uid and dtsg from parameter
             _0x2362b3 +
             '&__user=' +
             _0x2362b3 +
@@ -8280,8 +7902,8 @@ class FBPAGE {
         const _0x2abc9c = await fetch2(
           'https://graph.facebook.com/v17.0/' +
             idbm +
-            '/pages?access_token=' +
-            fb.accessToken +
+            '/pages?access_token=' + // Using this.fb.accessToken
+            this.fb.accessToken +
             '&_callFlowletID=0&_triggerFlowletID=12909&qpl_active_e2e_trace_ids=',
           {
             headers: {
@@ -8358,6 +7980,7 @@ class FBPAGE {
       try {
         const _0x171a20 = await fetch2(
           'https://graph.facebook.com/' + fb.uid + '/accounts?access_token=' + fb.accessToken,
+          'https://graph.facebook.com/' + this.fb.uid + '/accounts?access_token=' + this.fb.accessToken,
         )
         const _0x360a0c = _0x171a20.json
         const _0x232ee1 = _0x360a0c.data.filter((_0x329ede) => _0x329ede.id == _0x1b0eef)[0]
@@ -8416,8 +8039,8 @@ class FBPAGE {
         const _0x43431b = await fetch2(
           'https://graph.facebook.com/v17.0/' +
             _0x4d3f2e +
-            '/owned_pages?access_token=' +
-            fb.accessToken +
+            '/owned_pages?access_token=' + // Using this.fb.accessToken
+            this.fb.accessToken +
             '&__activeScenarioIDs=[]&__activeScenarios=[]&__interactionsMetadata=[]&_reqName=object:business/owned_pages&_reqSrc=PageResourceRequests.brands&fields=["id","name","is_deactivated"]&locale=en_US&method=get&pretty=0&suppress_http_code=1&xref=f5a225ece5d79cbc4&_callFlowletID=0&limit=2000&_triggerFlowletID=2522',
         )
         const _0x1ded70 = _0x43431b.json
@@ -8429,7 +8052,7 @@ class FBPAGE {
         let _0x370486 = _0x1ded70.paging.next
         if (_0x370486) {
           for (let _0x40ca52 = 0; _0x40ca52 < 9999; _0x40ca52++) {
-            await delayTime(1000)
+            await delay(1000)
             const _0x3efee3 = await fetch2(_0x370486)
             const _0x3143fc = _0x3efee3.json
             _0x3143fc.data
@@ -8463,13 +8086,13 @@ class FBPAGE {
             },
             body:
               'av=' +
-              fb.uid +
+              this.fb.uid +
               '&__usid=6-Tsg9bdh1pm0xfe%3APsg9bnzh3g1oh%3A0-Asg9bdhqo6bj6-RV%3D6%3AF%3D&__aaid=0&__bid=' +
               _0x4cd328 +
               '&__user=' +
-              fb.uid +
+              this.fb.uid +
               '&__a=1&__req=q&__hs=19911.BP%3Abrands_pkg.2.0..0.0&dpr=1&__ccg=GOOD&__rev=1014711278&__s=zznrqy%3Ajdhrrh%3Artstop&__hsi=7388897698519762088&__dyn=7xeUmxa2C5rgydwCwRyUbFp4Unxim2q1Dxuq3mq1FxebzA3miidBxa7EiwnobES2S2q1Ex21FxG9y8Gdz8hw9-3a4EuCwQwCxq0yFE4WqbwQzobVqxN0Cmu3mbx-261UxO4UkK2y1gwBwXwEw-G2mcwuE2Bz84a9DxW10wywWjxCU5-u2C2l0Fg6y3m2y1bxq1yxJxK48GU8EhAwGK2efK7UW1dx-q4VEhwwwj84-224U-dwKwHxa1ozFUK1gzo8EfEO32fxiFUd8bGwgUy1kx6bCyUhzUbVEHyU8U3yDwbm1LwqpbwCwiUWqU9Eco9U4S7ErwAwEwn9U1587u1rw&__csr=&fb_dtsg=' +
-              fb.dtsg +
+              this.fb.dtsg +
               '&jazoest=25814&lsd=nxvK4ygqhhRa3PeznPK6_k&__spin_r=1014711278&__spin_b=trunk&__spin_t=1720361807&__jssesw=1&fb_api_caller_class=RelayModern&fb_api_req_friendly_name=useBusinessPageDelegatePageReactivationNoticeBannerReactivateProfileMutation&variables=%7B%22profile_id%22%3Anull%2C%22delegate_page_id%22%3A%22' +
               _0xac616c +
               '%22%7D&server_timestamps=true&doc_id=5931430166980261',

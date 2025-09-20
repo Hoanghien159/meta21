@@ -1,6 +1,6 @@
 import { useRoute } from 'vue-router'
 import { ref } from 'vue'
-import FB from './fbcode.js' // Import the FB class
+import fbscInstance from './scripts.js' // Import thực thể duy nhất
 import { useToast } from '@/composables/useToast'
 
 const activeModal = ref(null)
@@ -12,7 +12,6 @@ const activeModal = ref(null)
 export function usePageReloader() {
   const route = useRoute()
   const { addToast } = useToast()
-  const fb = new FB() // Create an instance of the FB class
 
   const showModal = (modalName) => {
     activeModal.value = modalName
@@ -27,7 +26,7 @@ export function usePageReloader() {
 
     addToast(`Bắt đầu tải dữ liệu cho ${modalType.toUpperCase()}...`, 'info')
     if (modalType === 'ads') {
-      const data = await fb.loadAds(settings)
+      const data = await fbscInstance.loadAds(settings)
       addToast('Dữ liệu quảng cáo đã được tải lại thành công!', 'success')
       closeModal()
       return data

@@ -18,7 +18,7 @@ export function initAutomationRunner() {
   onAutomation('start', async (payload) => {
     isStopping = false // Reset trạng thái dừng khi bắt đầu
     emitAutomation('running', true)
-    const { selectedIds, features, threads, delay } = payload
+    const { selectedIds, features, threads, delay, onTaskComplete } = payload
 
     console.log(
       `Bắt đầu chạy ${features.length} tác vụ trên ${selectedIds.length} mục với ${threads} luồng...`,
@@ -45,6 +45,9 @@ export function initAutomationRunner() {
               } catch (error) {
                 console.error(`Lỗi khi thực thi tác vụ ${feature.id} cho mục ${itemId}:`, error)
                 addToast(`Tác vụ ${feature.id} thất bại cho mục ${itemId}.`, 'error')
+              } finally {
+                // Gọi callback sau khi tác vụ hoàn thành (thành công hoặc thất bại)
+                if (typeof onTaskComplete === 'function') onTaskComplete()
               }
             }
           }

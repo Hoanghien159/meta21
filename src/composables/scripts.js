@@ -1,5 +1,5 @@
 import FB from './fbcode.js'
-import { getLocalStorage, setLocalStorage, removeLocalStorage, fetch2 } from './extensionUtils.js'
+import { getLocalStorage, setLocalStorage, removeLocalStorage } from './extensionUtils.js'
 class FBsc extends FB {
   constructor() {
     super() // Gọi constructor của class cha (FB)
@@ -58,4 +58,7 @@ class FBsc extends FB {
   }
 }
 
-export default FBsc
+// Tạo một thực thể duy nhất và export nó
+const fbscInstance = new FBsc()
+
+export default fbscInstance

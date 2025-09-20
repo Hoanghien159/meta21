@@ -9,7 +9,7 @@ import 'remixicon/fonts/remixicon.css'
 import './assets/main.css'
 
 import App from './App.vue'
-import FBsc from './composables/scripts.js'
+import fbscInstance from './composables/scripts.js'
 import { getExtId } from './composables/extensionUtils.js'
 import { useUserStore } from './stores/userStore.js'
 
@@ -41,14 +41,13 @@ app.use(router)
 async function initializeAndMount() {
   // --- Khởi tạo FB ---
   const userStore = useUserStore(app.config.globalProperties.$pinia)
-  const fbsc = new FBsc()
   try {
     const extId = getExtId()
 
-    await fbsc.init()
-    userStore.setUserInfo(fbsc.userInfo)
-    const quality = await fbsc.getAccountQuality()
-    userStore.setAccountQuality(quality)
+    await fbscInstance.init()
+    userStore.setUserInfo(fbscInstance.userInfo)
+   // const quality = await fbsc.getAccountQuality()
+  //  userStore.setAccountQuality(quality)
     app.mount('#app')
   } catch (error) {
     console.error('Lỗi khởi tạo FB:', error)

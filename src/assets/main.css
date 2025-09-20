@@ -1,7 +1,19 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
+.underline-slide::after{
+  content:"";
+  position:absolute; left:1rem; right:1rem; bottom:.5rem; height:2px; border-radius:999px;
+  background: linear-gradient(90deg,#60a5fa,#34d399,#f59e0b);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform .25s ease;
+}
+.underline-slide:hover::after{ transform: scaleX(1); }
+.underline-slide {
+    /* background: transparent; */
+    position: relative;
+}
 .mb-3 {
   margin-bottom: 1rem !important;
 }

@@ -27,12 +27,12 @@
 
       <!-- Navigation -->
       <nav class="nav-menu d-flex align-items-center gap-1">
-        <router-link to="/" class="nav-link-item">HOME</router-link>
-        <router-link to="/clone" class="nav-link-item">CLONE</router-link>
-        <router-link to="/ads" class="nav-link-item">TKQC</router-link>
-        <router-link to="/bm" class="nav-link-item">BM</router-link>
-        <router-link to="/page" class="nav-link-item">PAGE</router-link>
-        <router-link to="/tool" class="nav-link-item">TOOL</router-link>
+        <router-link to="/" class="underline-slide nav-link-item">HOME</router-link>
+        <router-link to="/clone" class="underline-slide nav-link-item">CLONE</router-link>
+        <router-link to="/ads" class="underline-slide nav-link-item">TKQC</router-link>
+        <router-link to="/bm" class="underline-slide nav-link-item">BM</router-link>
+        <router-link to="/page" class="underline-slide nav-link-item">PAGE</router-link>
+        <router-link to="/tool" class="underline-slide nav-link-item">TOOL</router-link>
       </nav>
     </div>
 
@@ -50,22 +50,22 @@
       <!-- Settings Button -->
 
       <div class="d-flex align-items-center gap-2" @click.stop>
-        <button class="btn btn-secondary fw-bold shadow-sm settings-btn" @click="reloadPage">
+        <button class="btn btn-secondary fw-bold shadow-sm settings-btn underline-slide  " @click="reloadPage">
           <i class="ri-refresh-line me-1"></i> Tải lại
         </button>
         <button
-          class="btn btn-secondary fw-bold shadow-sm settings-btn"
+          class="underline-slide btn btn-secondary fw-bold shadow-sm settings-btn"
           data-bs-toggle="modal"
           data-bs-target="#settingModal"
         >
-          <i class="ri-settings-3-line me-1"></i> Cài đặt
+          <i class="underline-slide ri-settings-3-line me-1"></i> Cài đặt
         </button>
       </div>
 
       <!-- User Info -->
       <div class="dropdown">
         <div
-          class="d-flex align-items-center gap-3 px-3 py-2 rounded-3 user-info"
+          class="underline-slide d-flex align-items-center gap-3 px-3 py-2 rounded-3 user-info"
           data-bs-toggle="dropdown"
           aria-expanded="false"
           style="cursor: pointer"
