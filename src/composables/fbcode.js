@@ -53,11 +53,13 @@ class FB {
         const taskIndex = tasks.findIndex((task) => task.id === taskId)
         const task = tasks[taskIndex]
         $(document).trigger('running', [task.id])
-      // Thay vì truy cập trực tiếp, hãy gửi sự kiện
-      const event = new CustomEvent('updateRow', { detail: { id: task.id, field: 'process', value: '' } });
-      document.dispatchEvent(event);
-      tasks[taskIndex].process = 'RUNNING';
-      runningTasks.push(task.id);
+        // Thay vì truy cập trực tiếp, hãy gửi sự kiện
+        const event = new CustomEvent('updateRow', {
+          detail: { id: task.id, field: 'process', value: '' },
+        })
+        document.dispatchEvent(event)
+        tasks[taskIndex].process = 'RUNNING'
+        runningTasks.push(task.id)
         try {
           await action(
             task,
@@ -469,7 +471,7 @@ class FB {
           //  adAccountsData.data = adAccountsData.data.filter(_0x355ff7 => !_0x355ff7.owner_business);
           // Ensure adAccountsData.data exists before filtering
           if (adAccountsData && Array.isArray(adAccountsData.data)) {
-            adAccountsData.data = adAccountsData.data.filter((account) => !account.owner_business);
+            adAccountsData.data = adAccountsData.data.filter((account) => !account.owner_business)
           } else {
             adAccountsData.data = [] // Initialize as empty array if data is missing
           }
@@ -542,7 +544,7 @@ class FB {
             6: 'Bị hạn chế do liên quan đến độ tin cậy',
             7: 'Tài khoản đã bị đóng vĩnh viễn',
             8: 'Tài khoản reseller (đại lý) không sử dụng và bị đóng',
-          };
+          }
           this.fb.updateLoadingProgress(65)
           // Bản đồ vô hiệu hóa do thành chuỗi dễ đọc hơn
           _0x2b8d6b(
@@ -704,7 +706,7 @@ class FB {
         // Hiện tại, chúng ta sẽ tập trung vào luồng chính là tải tất cả tài khoản.
         // Bạn có thể mở rộng các trường hợp `byId`, `byBmId` sau này nếu cần.
         loadingDataAds() // Hiển thị placeholder "Đang tải..."
-        const accounts = await this.fbtkqc.getAdAccounts(hiddenAccounts, pageCount);
+        const accounts = await this.fbtkqc.getAdAccounts(hiddenAccounts, pageCount)
         this.fbtkqc.getAdAccountsData(accounts)
         resolve(accounts) // Trả về dữ liệu tài khoản
       } catch (error) {
@@ -2911,6 +2913,142 @@ export class FBTKQC {
     this.fb = fbInstance
   }
 
+  async TakeDraft() {
+    // return new Promise(async (resolve, reject) => {
+    try {
+      let selectedRows = getSelectedRows()
+      const _0x4d8e95 = selectedRows.length > 0 ? selectedRows[0] : null
+      let datas
+      if (_0x4d8e95) {
+        // Gọi API lấy danh sách Business Asset Groups
+        const response = await fetch2(
+          'https://graph.facebook.com/v19.0/act_' +
+            _0x4d8e95.adId +
+            '?fields=addrafts%7Bid%7D&access_token=' + // Using fb.accessToken from the outer scope
+            this.fb.accessToken2,
+        )
+        const jsonData = await response.json
+
+        // Lấy giá trị id đầu tiên từ addrafts.data
+        const draftId = jsonData.addrafts?.data?.length > 0 ? jsonData.addrafts.data[0].id : null
+
+        if (!draftId) {
+          Swal.fire({ icon: 'warning', title: 'Cảnh báo', text: 'Không tìm thấy draftId.' })
+          return null
+        }
+
+        const response2 = await fetch2(
+          'https://graph.facebook.com/v15.0/' +
+            draftId +
+            '/addraft_fragments?access_token=' +
+            this.fb.accessToken2 +
+            '&fields=id,ad_object_type,values,ad_object_id',
+        )
+        const jsonData2 = await response2.json
+        // Xử lý values thành chuỗi mong muốn
+        const extractedValues = {}
+
+        jsonData2.data.forEach((item, index) => {
+          let { values } = item
+
+          // Nếu values là chuỗi, kiểm tra và sửa lỗi escape
+          if (typeof values === 'string') {
+            try {
+              values = values
+                .replace(/\\\\/g, '\\') // Chuyển \\ thành \
+                .replace(/\\"/g, '"') // Chuyển \" thành "
+                .replace(/\\u([0-9a-fA-F]{4})/g, '\\u$1') // Chuyển \\uXXXX thành \uXXXX hợp lệ
+
+              // Parse lại JSON nếu có thể
+              values = JSON.parse(values)
+            } catch (e) {
+              console.error(`Lỗi parse JSON từ values tại index ${index}:`, e)
+              return
+            }
+          }
+
+          // Kiểm tra lại nếu values hợp lệ
+          if (!Array.isArray(values)) return
+
+          extractedValues[`values_${index + 1}`] = values.map((value) => {
+            if (value === null || value === 'null') return null
+            if (value === 'true') return true
+            if (value === 'false') return false
+            return value
+          })
+        })
+
+        const formatValue = (value) => {
+          if (!value) return '' // Tránh lỗi khi value là undefined hoặc null
+          return JSON.stringify(JSON.parse(JSON.stringify(value)))
+            .replace(/\\"/g, '"') // Loại bỏ escape dư thừa của dấu "
+            .replace(/"null"/g, 'null') // Giữ null đúng định dạng
+            .replace(/"true"/g, 'true') // Giữ true đúng định dạng
+            .replace(/"false"/g, 'false') // Giữ false đúng định dạng
+            .replace(/\\\\u/g, '\\u') // Chuyển \\uXXXX thành \uXXXX
+            .replace(/\\\\"/g, '"') // Loại bỏ dấu \\\" thành "
+            .replace(/\\n/g, 'n')
+            .replace(/^"(.*)"$/, '$1') // Xóa dấu " ngoài cùng nếu có
+            .replace(/""([^"]+?)""/g, '"$1"') // Xóa 1 dấu " nếu có hai dấu "" liền nhau
+            .replace(/"new_value":"(-?\d+)"/g, (match, p1) => {
+              const num = Number(p1)
+              if (num < 0 || num < 1e9) {
+                return `"new_value":${num}`
+              }
+              return match
+            })
+            .replace(/"new_value":"\[\]"/g, '"new_value":[]') // Chuyển mảng rỗng thành []
+            .replace(/"new_value":"(\[.+?\])"/g, '"new_value":$1') // Chuyển mảng chứa phần tử thành mảng thật
+            .replace(/"{/g, '{')
+            .replace(/}"/g, '}')
+        }
+        // Lấy account_id, campaign_id, parentAdObjectID
+        let accountId = ''
+        let adObjectId = ''
+        let adObjectId2 = ''
+
+        jsonData2.data.forEach((obj) => {
+          let accountObj = obj.values.find((item) => item.field === 'account_id')
+          if (accountObj && accountObj.new_value) {
+            accountId = accountObj.new_value.replace(/"/g, '') // Loại bỏ dấu ngoặc kép
+          }
+
+          let adObjectIdObj = obj.values.find((item) => item.field === 'campaign_id')
+          if (adObjectIdObj && adObjectIdObj.new_value) {
+            adObjectId = adObjectIdObj.new_value.replace(/"/g, '') // Loại bỏ dấu ngoặc kép
+          }
+
+          let adObjectIdObj2 = obj.values.find((item) => item.field === 'adset_id')
+          if (adObjectIdObj2 && adObjectIdObj2.new_value) {
+            adObjectId2 = adObjectIdObj2.new_value.replace(/"/g, '') // Loại bỏ dấu ngoặc kép
+          }
+        })
+        // Định dạng kết quả theo yêu cầu
+        datas = `${accountId}|${adObjectId}|${adObjectId2}|${formatValue(extractedValues.values_3) || ''}|${formatValue(extractedValues.values_2) || ''}|${formatValue(extractedValues.values_1) || ''}`
+      } else {
+        Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Không tìm thấy tài khoản nào!' })
+        return null
+      }
+
+      if (datas) {
+        await setLocalStorage('draftData', datas)
+        Swal.fire({ icon: 'success', title: 'Thành công', text: 'Lấy xong nháp!' })
+        return datas
+      } else {
+        Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Không thể lấy dữ liệu nháp.' })
+        return null
+      }
+    } catch (error) {
+      console.log(error)
+      console.error('Lỗi khi lấy nháp:', error)
+      Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Đã xảy ra lỗi khi lấy nháp!' })
+      return null
+    } finally {
+      // Ẩn loading
+      $('#loadgroup').prop('disabled', false).html('Load nhóm')
+    }
+  }
+
   checkADSlive(adInfo, _0x4c4040) {
     return new Promise(async (_0x567957, _0x4cb824) => {
       let trangThaiTaiKhoan1
@@ -2926,12 +3064,12 @@ export class FBTKQC {
         if (response?.errors ?? response?.error) {
           addToast(`❌ Lỗi check live: ${error.message || error}`, 'error')
         }
-        trangThaiTaiKhoan1 = data.account_status;
+        trangThaiTaiKhoan1 = data.account_status
         const idBm = $("select[name='accountSelect']").val()
         const thongTinHold = await this.checkHold(adInfo.adId)
         // Nếu tài khoản bị hold, đặt trạng thái là 999
         if (thongTinHold.status) {
-          trangThaiTaiKhoan2 = 999;
+          trangThaiTaiKhoan2 = 999
         } else if (idBm != 0) {
           await delay(400)
           // Nếu có idBm, kiểm tra trạng thái tài khoản quảng cáo qua API GraphQL
@@ -3044,10 +3182,10 @@ export class FBTKQC {
                 const accountData = JSON.parse(results[i].body)
                 // Sửa lỗi: Chuẩn hóa ID trước khi tìm kiếm.
                 // accountData.account_id có dạng "act_123456" còn acc.id chỉ là "123456".
-                const normalizedAdId = accountData.account_id.replace('act_', '');
-                const index = _0x68362c.findIndex((acc) => acc.id === normalizedAdId);
+                const normalizedAdId = accountData.account_id.replace('act_', '')
+                const index = _0x68362c.findIndex((acc) => acc.id === normalizedAdId)
 
-                if (index === -1) continue; // Bỏ qua nếu không tìm thấy tài khoản tương ứng
+                if (index === -1) continue // Bỏ qua nếu không tìm thấy tài khoản tương ứng
                 // Format dữ liệu, tính toán các trường cần thiết
                 accountData.limit = accountData.adtrust_dsl
                 accountData.prePay = accountData.is_prepay_account ? 'TT' : 'TS'
@@ -3142,9 +3280,9 @@ export class FBTKQC {
                     prePay: accountData.prePay,
                     role: accountData.userpermissions?.data[0]?.role || 'UNKNOWN',
                     bm: accountData.owner_business ? accountData.owner_business.id : null,
-                  }
-                });
-                document.dispatchEvent(updateEvent);
+                  },
+                })
+                document.dispatchEvent(updateEvent)
               }
             } catch (err) {
               addToast(`❌ Lỗi khi tải tài khoản: ${err.message || err}`, 'error')
@@ -3213,15 +3351,21 @@ export class FBTKQC {
               }
 
               // Gửi sự kiện để cập nhật từng trường
-              const countryUpdateEvent = new CustomEvent('updateRow', { detail: { id: rowId, field: 'country', value: holdStatus.country } });
-              document.dispatchEvent(countryUpdateEvent);
+              const countryUpdateEvent = new CustomEvent('updateRow', {
+                detail: { id: rowId, field: 'country', value: holdStatus.country },
+              })
+              document.dispatchEvent(countryUpdateEvent)
 
-              const paymentUpdateEvent = new CustomEvent('updateRow', { detail: { id: rowId, field: 'payment', value: paymentData } });
-              document.dispatchEvent(paymentUpdateEvent);
+              const paymentUpdateEvent = new CustomEvent('updateRow', {
+                detail: { id: rowId, field: 'payment', value: paymentData },
+              })
+              document.dispatchEvent(paymentUpdateEvent)
 
               if (specialStatus) {
-                const statusUpdateEvent = new CustomEvent('updateRow', { detail: { id: rowId, field: 'status', value: specialStatus } });
-                document.dispatchEvent(statusUpdateEvent);
+                const statusUpdateEvent = new CustomEvent('updateRow', {
+                  detail: { id: rowId, field: 'status', value: specialStatus },
+                })
+                document.dispatchEvent(statusUpdateEvent)
               }
             } catch (err) {
               addToast(`❌ Lỗi khi tải tài khoản: ${err.message || err}`, 'error')
@@ -3379,7 +3523,9 @@ export class FBTKQC {
             status: statusText,
             statusClass: statusClass,
             // Bổ sung các trường mặc định để cột hiển thị, tránh lỗi undefined
-            spent: 0, threshold: 0, currency: '',
+            spent: 0,
+            threshold: 0,
+            currency: '',
           }
         })
         _0x4a6c72(formattedAccounts)
@@ -6088,7 +6234,7 @@ class FBBM {
         let _0x372670 = _0x2cb35e.paging.next
         if (_0x372670) {
           for (let _0xc7dfda = 0; _0xc7dfda < 9999; _0xc7dfda++) {
-            const _0x2ba780 = await fetch2(_0x372670);
+            const _0x2ba780 = await fetch2(_0x372670)
             const _0xf3aa36 = _0x2ba780.json
             if (_0xf3aa36.data) {
               _0xf3aa36.data.forEach((_0x4f7a6a) => {
@@ -6123,7 +6269,7 @@ class FBBM {
         let _0x5f3459 = _0x264c47.paging.next
         if (_0x5f3459) {
           for (let _0x29b3ae = 0; _0x29b3ae < 9999; _0x29b3ae++) {
-            const _0x2fd573 = await fetch2(_0x5f3459);
+            const _0x2fd573 = await fetch2(_0x5f3459)
             const _0x17b26b = _0x2fd573.json
             if (_0x17b26b.data) {
               _0x17b26b.data.forEach((_0x304bd3) => {
@@ -6600,7 +6746,7 @@ class FBBM {
                         body:
                           'av=' +
                           fb.uid +
-                  '&__usid=6-Ts626y2arz8fg%3APs626xy1mafk6f%3A0-As626x5t9hdw-RV%3D6%3AF%3D&session_id=3f06e26e24310de8&__user=' + // Using fb.uid and fb.dtsg from the outer scope
+                          '&__usid=6-Ts626y2arz8fg%3APs626xy1mafk6f%3A0-As626x5t9hdw-RV%3D6%3AF%3D&session_id=3f06e26e24310de8&__user=' + // Using fb.uid and fb.dtsg from the outer scope
                           fb.uid +
                           '&__a=1&__req=1&__hs=19713.BP%3ADEFAULT.2.0..0.0&dpr=1&__ccg=EXCELLENT&__rev=1010574318&__s=bgx31o%3A93y1un%3Aj1i0y0&__hsi=7315329750708113449&__dyn=7xeUmxa2C5ryoS1syU8EKmhG5UkBwqo98nCG6UmCyEgwjojyUW3qi4FoixWE-1txaczEeU-5Ejwl8gwqoqyojzoO4o2oCwOxa7FEd89EmwoU9FE4Wqmm2ZedUbpqG6kE8RoeUKUfo7y78qgOUa8lwWxe4oeUuyo465o-0xUnw8ScwgECu7E422a3Gi6rwiolDwjQ2C4oW2e1qyQ6U-4Ea8mwoEru6ogyHwyx6i8wxK3eUbE4S7VEjCx6Etwj84-224U-dwKwHxa1ozFUK1gzpErw-z8c89aDwKBwKG13y85i4oKqbDyoOEbVEHyU8U3yDwbm1Lx3wlF8C221bzFHwCwNwDwjouxK2i2y1sDw9-&__csr=&fb_dtsg=' +
                           fb.dtsg +
@@ -6720,7 +6866,7 @@ class FBBM {
                             '&last_name=' +
                             randomNumberRange(11111, 99999) +
                             '&invitation_token=' +
-            _0x8dbc6f + // Using fb.userInfo and fb.dtsg from the outer scope
+                            _0x8dbc6f + // Using fb.userInfo and fb.dtsg from the outer scope
                             '&receive_marketing_messages=false&user_preferred_business_email&__user=' +
                             fb.userInfo.id +
                             '&__a=1&__req=2&__hs=19664.BP%3ADEFAULT.2.0..0.0&dpr=1&__ccg=GOOD&__rev=1009675755&__s=voml6w%3Aorwnqa%3A3cyaaa&__hsi=7297248857485608221&__dyn=7xeUmwkHgydwn8K2WnFwn84a2i5U4e1Fx-ewSwMxW0DUS2S0lW4o3Bw5VCwjE3awbG78b87C1xwEwlU-0nS4o5-1uwbe2l0Fwwwi85W0_Ugw9KfwbK0RE5a1qwqU8E5W0HUvw5rwSxy0gq0Lo6-1FwbO0NE1rE&__csr=&fb_dtsg=' +
@@ -6751,7 +6897,8 @@ class FBBM {
             }
           }
           await Promise.all(_0x5c701a)
-          if (_0x4a23bf.length > 0) { // This seems to be always true if the loop runs
+          if (_0x4a23bf.length > 0) {
+            // This seems to be always true if the loop runs
             $(document).trigger('updateLinkAll', [_0x4a23bf])
           }
           if (_0x204386.length > 0) {
@@ -6831,7 +6978,7 @@ class FBBM {
               body:
                 'av=' +
                 fb.uid +
-                  '&session_id=17e613b789f86fcc&__aaid=0&__bid=' + // Using fb.uid, fb.dtsg, and fb.lsd from the outer scope
+                '&session_id=17e613b789f86fcc&__aaid=0&__bid=' + // Using fb.uid, fb.dtsg, and fb.lsd from the outer scope
                 _0x33f1ef +
                 '&__user=' +
                 fb.uid +
@@ -6858,15 +7005,15 @@ class FBBM {
               },
               body:
                 'av=' +
-                  this.fb.uid +
-                  '&session_id=17e613b789f86fcc&__aaid=0&__bid=' +
+                this.fb.uid +
+                '&session_id=17e613b789f86fcc&__aaid=0&__bid=' +
                 _0x33f1ef +
                 '&__user=' +
-                  this.fb.uid +
+                this.fb.uid +
                 '&__a=1&__req=i&__hs=20151.BP:DEFAULT.2.0...0&dpr=1&__ccg=GOOD&__rev=1020564878&__s=g139k8:103eex:hwphka&__hsi=7477845871681707178&__dyn=7xeUmxa3-Q5E9EdoK2Wmhe2Om2q1Dxuq3O1Fx-ewSxum4Euxa0z8S2S2q1Ex20zEyaxG4o2oCwho5G0O85mqbwgEbUy742ppU467U8o2lxe68a8522m3K7EC1Dw4WwgEhxW10wnEtwoVUao9k2B0q85W1bxq1-orx2ewyx6i2GU8U-UbE4S2q4UoG7o2swh8S1qxa1ozEjwnE2Lxi3-1RwrUux616yES2e0UFU2RwrU6CiU9E4KeyE9Eco9U6O6U4R0mVU1587u1rwc6227o&__csr=&fb_dtsg=' +
-                  this.fb.dtsg +
+                this.fb.dtsg +
                 '&jazoest=25762&lsd=' +
-                  this.fb.lsd +
+                this.fb.lsd +
                 '&__spin_r=1020564878&__spin_b=trunk&__spin_t=1741071667&__jssesw=1&fb_api_caller_class=RelayModern&fb_api_req_friendly_name=CometIXTFacebookXfacActorAppealTriggerRootQuery&variables={"input":{"trigger_event_type":"XFAC_ACTOR_APPEAL_ENTRY","ufac_design_system":"GEODESIC","xfac_id":"' +
                 _0x9eb1bb +
                 '","nt_context":null,"trigger_session_id":"d289e01d-ffc9-43ef-905b-0ee4a5807fd5"},"scale":1}&server_timestamps=true&doc_id=29439169672340596',
@@ -7424,11 +7571,11 @@ class FBBM {
           'https://business.facebook.com/api/graphql/?_callFlowletID=0&_triggerFlowletID=3129',
           {
             headers: {
-                'content-type': 'application/x-www-form-urlencoded',
+              'content-type': 'application/x-www-form-urlencoded',
             },
             body:
               'av=' +
-                this.fb.uid +
+              this.fb.uid +
               '&__usid=6-Tsmxjub117xs4l%3APsmxjw7sgqyks%3A0-Asmxjub15hrye4-RV%3D6%3AF%3D&__aaid=0&__bid=' +
               _0x2f5ce8 +
               '&__user=' +
@@ -7704,11 +7851,11 @@ class FBBM {
               'https://business.facebook.com/api/graphql/?_callFlowletID=5894&_triggerFlowletID=5890',
               {
                 headers: {
-                'content-type': 'application/x-www-form-urlencoded',
+                  'content-type': 'application/x-www-form-urlencoded',
                 },
                 body:
                   'av=' +
-                this.fb.uid +
+                  this.fb.uid +
                   '&__usid=6-Tsks9ku1odjn08%3APsks9ku1m32dt7%3A0-Asks7awg66ikg-RV%3D6%3AF%3D&__aaid=0&__bid=' +
                   _0x3ffd0e.bmId +
                   '&__user=' +
@@ -7862,7 +8009,8 @@ class FBPAGE {
             'content-type': 'application/x-www-form-urlencoded',
           },
           method: 'POST',
-          body: // Using dtsg from the parameter
+          // Using dtsg from the parameter
+          body:
             'av=' + // Using this.fb.uid and dtsg from parameter
             _0x2362b3 +
             '&__user=' +
@@ -7980,7 +8128,10 @@ class FBPAGE {
       try {
         const _0x171a20 = await fetch2(
           'https://graph.facebook.com/' + fb.uid + '/accounts?access_token=' + fb.accessToken,
-          'https://graph.facebook.com/' + this.fb.uid + '/accounts?access_token=' + this.fb.accessToken,
+          'https://graph.facebook.com/' +
+            this.fb.uid +
+            '/accounts?access_token=' +
+            this.fb.accessToken,
         )
         const _0x360a0c = _0x171a20.json
         const _0x232ee1 = _0x360a0c.data.filter((_0x329ede) => _0x329ede.id == _0x1b0eef)[0]

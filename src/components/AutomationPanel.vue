@@ -52,8 +52,8 @@
                         <label class="form-check-label" :for="child.id">{{ child.label }}</label>
                       </div>
                       <div v-else-if="child.type === 'select'" class="floating-input">
-                        <select :id="child.id" v-model="settingsValues[child.id]" class="form-select">
-                          <option v-for="option in child.options" :key="option.value" :value="option.value">{{ option.text }}</option>
+                        <select :id="child.id" v-model="settingsValues[child.id]" class="form-select" @change="handleSelectChange">
+                          <option v-for="option in child.options" :key="option.id" :value="option.id">{{ option.value }}</option>
                         </select>
                         <label :for="child.id">{{ child.label }}</label>
                       </div>
@@ -66,7 +66,10 @@
 
                 <!-- Nếu không phải container, render như bình thường -->
                 <div v-else-if="setting.type !== 'container' && shouldShowSetting(setting)" class="setting-item" :class="[{ 'w-100': setting.type === 'button' && !setting.class }, setting.class]">
-                  <div v-if="!['checkbox', 'select', 'button'].includes(setting.type)" class="floating-input">
+                  <div v-if="setting.type === 'label'" class="static-label">
+                    <span>{{ setting.label }}</span>
+                  </div>
+                  <div v-else-if="!['checkbox', 'select', 'button', 'label'].includes(setting.type)" class="floating-input">
                     <input :type="setting.type" placeholder=" " :id="setting.id" :min="setting.min" v-model="settingsValues[setting.id]" />
                     <label :for="setting.id">{{ setting.label }}</label>
                   </div>
@@ -75,8 +78,8 @@
                     <label class="form-check-label" :for="setting.id">{{ setting.label }}</label>
                   </div>
                   <div v-else-if="setting.type === 'select'" class="floating-input">
-                    <select :id="setting.id" v-model="settingsValues[setting.id]" class="form-select">
-                      <option v-for="option in setting.options" :key="option.value" :value="option.value">{{ option.text }}</option>
+                    <select :id="setting.id" v-model="settingsValues[setting.id]" class="form-select" @change="handleSelectChange">
+                      <option v-for="option in setting.options" :key="option.id" :value="option.id">{{ option.value }}</option>
                     </select>
                     <label :for="setting.id">{{ setting.label }}</label>
                   </div>
@@ -122,6 +125,9 @@ import { onMounted, onUnmounted, defineProps, ref, watch } from 'vue'
 import { sharedSelectedIds } from '@/composables/useSelection'
 import { useAutomation } from '@/composables/useAutomation'
 import { useToast } from '@/composables/useToast'
+import TomSelect from 'tom-select/dist/js/tom-select.complete.min.js'
+import 'tom-select/dist/css/tom-select.bootstrap5.min.css'
+
 
 const props = defineProps({
   features: {
@@ -136,6 +142,8 @@ const props = defineProps({
 
 const { emit: emitAutomation, on: onAutomation } = useAutomation()
 const { addToast } = useToast()
+
+const tomSelectInstances = ref({})
 
 const settingsValues = ref({})
 
@@ -315,14 +323,83 @@ const handleAutomationEnd = () => {
   console.log('Automation process has fully ended.')
 }
 
+const handleSelectChange = (event) => {
+  if (event.target.value) {
+    event.target.setAttribute('data-filled', 'true')
+  } else {
+    event.target.removeAttribute('data-filled')
+  }
+}
+
 const unsubscribeEnd = onAutomation('end', handleAutomationEnd)
 
 onUnmounted(() => {
   unsubscribeEnd() // Hủy đăng ký lắng nghe sự kiện khi component bị hủy
 })
 
+const initializeTomSelect = () => {
+  // Hủy các instance cũ trước khi tạo mới
+  Object.values(tomSelectInstances.value).forEach((instance) => instance.destroy())
+  tomSelectInstances.value = {}
+
+  const createTomSelect = (setting) => {
+    if (setting.searchable) {
+      const el = document.getElementById(setting.id)
+      if (el && !el.tomselect) {
+        const ts = new TomSelect(el, {
+          dropdownParent: 'body',
+          plugins: ['dropdown_input'],
+          create: false,
+          sortField: {
+            field: 'text',
+            direction: 'asc',
+          },
+          placeholder: setting.label,
+        })
+
+        // Thêm class vào thẻ cha để ẩn label gốc bằng CSS
+        const parentFloatingInput = el.closest('.floating-input')
+        if (parentFloatingInput) {
+          parentFloatingInput.classList.add('tom-select-initialized')
+        }
+        // Thêm listener để xử lý việc thêm/xóa class khi có giá trị
+        ts.on('change', (value) => {
+          const wrapper = ts.wrapper
+          if (value) {
+            wrapper.classList.add('has-value')
+          } else {
+            wrapper.classList.remove('has-value')
+          }
+        })
+      }
+    }
+  }
+
+  props.features.forEach((feature) => {
+    if (feature.settings) {
+      feature.settings.forEach((setting) => {
+        if (setting.type === 'container' && setting.children) {
+          setting.children.forEach(createTomSelect)
+        } else if (setting.type === 'select') {
+          createTomSelect(setting)
+        }
+      })
+    }
+  })
+}
+
+// Khởi tạo TomSelect khi component được mounted và khi các features thay đổi
+watch(
+  () => props.features,
+  () => {
+    // nextTick đảm bảo rằng DOM đã được cập nhật trước khi khởi tạo TomSelect
+    onMounted(initializeTomSelect)
+  },
+  { deep: true, immediate: true },
+)
+
 onMounted(() => {
-  const inputs = document.querySelectorAll('.floating-input input')
+  const inputs = document.querySelectorAll('.floating-input input, .floating-input select')
   inputs.forEach((input) => {
     if (input.value) {
       input.setAttribute('data-filled', 'true')
@@ -335,6 +412,13 @@ onMounted(() => {
         this.removeAttribute('data-filled')
       }
     })
+
+    // Thêm sự kiện change cho select để đảm bảo data-filled được cập nhật
+    if (input.tagName === 'SELECT') {
+      input.addEventListener('change', function () {
+        this.setAttribute('data-filled', 'true')
+      })
+    }
   })
 })
 </script>
@@ -560,13 +644,13 @@ input:checked + .slider:before {
 }
 
 .floating-input input:focus + label,
-.floating-input input:not(:placeholder-shown) + label {
+.floating-input input:not(:placeholder-shown) + label,
+.floating-input select[data-filled='true'] + label {
   top: -8px;
   left: 10px;
   font-size: 12px;
   padding: 0 5px;
 }
-
 /* Custom style cho checkbox setting */
 .custom-checkbox-setting {
   padding-left: 2.5em; /* Tăng khoảng cách để không bị chồng chéo */
@@ -576,10 +660,9 @@ input:checked + .slider:before {
 .setting-button {
   margin-bottom: 10px;
 }
-
-/* Control Panel */
-.control-panel {
-  padding: 20px;
+/* Ẩn label gốc khi TomSelect đã được khởi tạo */
+.floating-input.tom-select-initialized > label {
+  display: none !important;
 }
 
 .control-buttons {
@@ -711,16 +794,44 @@ input:checked + .slider:before {
 }
 
 [data-bs-theme='dark'] .floating-input input:focus + label,
-[data-bs-theme='dark'] .floating-input input:not(:placeholder-shown) + label {
+[data-bs-theme='dark'] .floating-input input:not(:placeholder-shown) + label,
+[data-bs-theme='dark'] .floating-input select[data-filled='true'] + label {
   color: #667eea;
   background: #272b34;
 }
 
+[data-bs-theme='dark'] .static-label span {
+  color: #a0aec0; /* Màu xám sáng, dễ đọc hơn */
+}
+
 [data-bs-theme='dark'] .control-panel {
+  padding: 20px;
+}
+
+/* Cải thiện màu chữ cho TomSelect trên nền tối */
+[data-bs-theme='dark'] .ts-control,
+[data-bs-theme='dark'] .ts-control input {
+  color: #dee2e6 !important; /* Màu chữ sáng hơn cho dễ đọc */
+}
+
+[data-bs-theme='dark'] .ts-dropdown .option {
+  color: #dee2e6; /* Màu chữ cho các tùy chọn trong dropdown */
   background: rgba(47, 51, 61, 0.5);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+[data-bs-theme='dark'] .ts-control .item {
+  color: #ffffff !important; /* Màu chữ trắng cho mục đã chọn */
+}
+
+[data-bs-theme='dark'] .ts-control input::placeholder {
+  color: #adb5bd; /* Màu cho placeholder */
+  opacity: 1; /* Đảm bảo placeholder không bị mờ */
+}
+/* Fix TomSelect dropdown z-index issue */
+:deep(.ts-dropdown) {
+  z-index: 1056; /* Higher than Bootstrap's modal z-index (1055) */
+}
 /* --- Light Theme Styles --- */
 [data-bs-theme='light'] #adPanel {
   background-color: #ffffff;
@@ -778,6 +889,11 @@ input:checked + .slider:before {
 .form-select {
   padding-top: 1.0rem;
   padding-bottom: 0.4rem;
+}
+
+.floating-input .form-select {
+  padding-top: 1.625rem;
+  padding-bottom: 0.625rem;
 }
 
 [data-bs-theme='dark'] .form-select {

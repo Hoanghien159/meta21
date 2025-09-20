@@ -51,17 +51,28 @@ import { useAutomationRunner } from '@/composables/useAutomationRunner'
 import { usePageReloader } from '@/composables/usePageReloader'
 import { useToast } from '@/composables/useToast'
 import { useSettings } from '@/composables/useSettings'
+import fbscInstance from '@/composables/scripts.js'
+
+// Import dữ liệu JSON từ một file duy nhất
+import settingsOptions from '@/assets/data/settingsOptions.json'
 
 const adsPageFeatures = ref([
-{
+  {
     id: 'AccmanageSettings',
     title: 'Quản lý tài khoản',
     icon: 'ri-account-circle-line',
-    settings: [{ id: 'addtogroup', label: 'Thêm vào nhóm', type: 'checkbox' },
+    settings: [
+      { id: 'addtogroup', label: 'Thêm vào nhóm', type: 'checkbox' },
       { id: 'removefromgroup', label: 'Xóa khỏi nhóm', type: 'checkbox' },
       { id: 'delfrombm', label: 'Xóa khỏi bm', type: 'checkbox' },
       { id: 'rename', label: 'Đổi tên', type: 'checkbox' },
-      { id: 'newName', label: 'Tên mới', type: 'text', showIf: { id: 'rename', value: true }, class: 'full-width' },
+      {
+        id: 'newName',
+        label: 'Tên mới',
+        type: 'text',
+        showIf: { id: 'rename', value: true },
+        class: 'full-width',
+      },
       {
         type: 'container', // Đánh dấu đây là một container
         showIf: [
@@ -69,7 +80,8 @@ const adsPageFeatures = ref([
           { id: 'removefromgroup', value: true },
         ],
         class: 'full-width-container', // Class cho container
-        children: [ // Các trường con
+        children: [
+          // Các trường con
           {
             id: 'btloadgroup',
             label: 'Load nhóm',
@@ -79,7 +91,10 @@ const adsPageFeatures = ref([
             id: 'slloadgroup',
             label: 'Chọn nhóm',
             type: 'select',
-            options: [{ value: 'opt1', text: 'Lựa chọn 1' }, { value: 'opt2', text: 'Lựa chọn 2' }],
+            options: [
+              { value: 'opt1', text: 'Lựa chọn 1' },
+              { value: 'opt2', text: 'Lựa chọn 2' },
+            ],
           },
           {
             id: 'btloaduser',
@@ -90,14 +105,17 @@ const adsPageFeatures = ref([
             id: 'slloaduser',
             label: 'Chọn user',
             type: 'select',
-            options: [{ value: 'opt1', text: 'Lựa chọn 1' }, { value: 'opt2', text: 'Lựa chọn 2' }],
+            options: [
+              { value: 'opt1', text: 'Lựa chọn 1' },
+              { value: 'opt2', text: 'Lựa chọn 2' },
+            ],
           },
         ],
       },
     ],
   },
 
- {
+  {
     id: 'CampSetting',
     title: 'Set Campaign',
     icon: 'ri-bar-chart-fill',
@@ -108,23 +126,23 @@ const adsPageFeatures = ref([
         children: [
           { id: 'cloneCD', label: 'Nhân CD có sẵn', type: 'checkbox' },
           { id: 'cloneInput', label: 'Số lượng', type: 'number' },
-        ]
+        ],
       },
-       {
+      {
         type: 'container',
         class: 'full-width-container',
         children: [
           { id: 'delcamp', label: 'Xóa camp', type: 'checkbox' },
           { id: 'delcampInput', label: 'Số lượng', type: 'number' },
-        ]
+        ],
       },
-       {
+      {
         type: 'container',
         class: 'full-width-container',
         children: [
-         { id: 'adddraft', label: 'Nhân Nháp', type: 'checkbox' },
+          { id: 'adddraft', label: 'Nhân Nháp', type: 'checkbox' },
           { id: 'adddraftInput', label: 'Số lượng', type: 'number' },
-        ]
+        ],
       },
 
       { id: 'postCampaign', label: 'Đăng chiến dịch', type: 'checkbox' },
@@ -134,7 +152,7 @@ const adsPageFeatures = ref([
       { id: 'deleteDraft', label: 'Xóa nháp', type: 'checkbox' },
       { id: 'importPeDraft', label: 'Nhập nháp PE', type: 'checkbox' },
       {
-        id: 'mainContent',
+        id: 'draftInput',
         label: '(IDs, Drafts...)',
         type: 'textarea',
         class: 'full-width',
@@ -143,6 +161,7 @@ const adsPageFeatures = ref([
         id: 'getDraft',
         label: 'Lấy nháp',
         type: 'button',
+        action: 'getDraft',
         class: 'half-width',
       },
       {
@@ -153,46 +172,159 @@ const adsPageFeatures = ref([
       },
     ],
   },
-{
-  id: 'EditCampaign',
-  title: 'Edit Campaign',
-  icon: 'ri-bar-chart-fill',
-  settings: [
-    { id: 'selectPostGroup', label: 'Campaign', type: 'select',  options: [{ value: 'opt1', text: 'Lựa chọn 1' }, { value: 'opt2', text: 'Lựa chọn 2' }], },
-    {
-      type: 'container',
-      class: 'full-width-container',
-      children: [
-        { id: 'toggleCampaign', label: 'Chiến dịch', type: 'checkbox' },
-        { id: 'toggleCampaignStatus', label: '(Tắt,Bật)', type: 'checkbox' },
-      ]
-    },
-    {
-      type: 'container',
-      class: 'full-width-container',
-      children: [
-        { id: 'toggleGroup', label: 'Nhóm', type: 'checkbox' },
-        { id: 'toggleGroupStatus', label: '(Tắt,Bật)', type: 'checkbox' },
-      ]
-    },
-    {
-      type: 'container',
-      class: 'full-width-container',
-      children: [
-        { id: 'toggleAd', label: 'Quảng cáo', type: 'checkbox' },
-        { id: 'toggleAdStatus', label: '(Tắt,Bật)', type: 'checkbox' },
-      ]
-    },
-    { id: 'postCampaign', label: 'Đăng chiến dịch', type: 'checkbox' },
-    { id: 'postGroup', label: 'Đăng nhóm', type: 'checkbox' },
-    { id: 'selectPostGroup', label: 'Loại', type: 'select',  options: [{ value: 'opt1', text: 'Lựa chọn 1' }, { value: 'opt2', text: 'Lựa chọn 2' }], },
-    { id: 'numberPostGroup', label: 'Số GS', type: 'number' },
-  ],
-},
+  {
+    id: 'EditCampaign',
+    title: 'Edit Campaign',
+    icon: 'ri-bar-chart-fill',
+    settings: [
+      {
+        id: 'selectPostGroup',
+        label: 'Campaign',
+        type: 'select',
+        options: [
+          { value: 'opt1', text: 'Lựa chọn 1' },
+          { value: 'opt2', text: 'Lựa chọn 2' },
+        ],
+      },
+      {
+        type: 'container',
+        class: 'full-width-container',
+        children: [
+          { id: 'toggleCampaign', label: 'Chiến dịch', type: 'checkbox' },
+          { id: 'toggleCampaignStatus', label: '(Tắt,Bật)', type: 'checkbox' },
+        ],
+      },
+      {
+        type: 'container',
+        class: 'full-width-container',
+        children: [
+          { id: 'toggleGroup', label: 'Nhóm', type: 'checkbox' },
+          { id: 'toggleGroupStatus', label: '(Tắt,Bật)', type: 'checkbox' },
+        ],
+      },
+      {
+        type: 'container',
+        class: 'full-width-container',
+        children: [
+          { id: 'toggleAd', label: 'Quảng cáo', type: 'checkbox' },
+          { id: 'toggleAdStatus', label: '(Tắt,Bật)', type: 'checkbox' },
+        ],
+      },
+      { id: 'postCampaign', label: 'Đăng chiến dịch', type: 'checkbox' },
+      { id: 'postGroup', label: 'Đăng nhóm', type: 'checkbox' },
+      {
+        id: 'selectPostGroup',
+        label: 'Loại',
+        type: 'select',
+        options: [
+          { value: 'opt1', text: 'Lựa chọn 1' },
+          { value: 'opt2', text: 'Lựa chọn 2' },
+        ],
+      },
+      { id: 'numberPostGroup', label: 'Số GS', type: 'number' },
+    ],
+  },
+  {
+    id: 'changeInfoSetting',
+    title: 'Đổi thông tin',
+    icon: 'ri-information-line',
+    settings: [
+      { id: 'someInfoLabel', label: 'Tiền tệ', type: 'label', class: 'full-width' },
+      {
+        type: 'container',
+        class: 'full-width-container',
+        children: [
+          {
+            id: 'currency',
+            label: 'Chọn tiền tệ',
+            searchable: true,
+            type: 'select',
+            options: settingsOptions.currencies, // This was already correct after my previous suggestion
+          },
+        ],
+      },
+      { id: 'someInfoLabel', label: 'Timezone', type: 'label', class: 'full-width' },
+      {
+        type: 'container',
+        class: 'full-width-container',
+        children: [
+          {
+            id: 'timezone',
+            label: 'Chọn múi giờ',
+            type: 'select',
+            searchable: true,
+            options: settingsOptions.timezones, // This was already correct after my previous suggestion
+          },
+        ],
+      },
+      { id: 'someInfoLabel', label: 'Quốc gia', type: 'label', class: 'full-width' },
+      {
+        type: 'container',
+        class: 'full-width-container',
+        children: [
+          {
+            id: 'country',
+            label: 'Chọn quốc gia',
+            type: 'select',
+            searchable: true,
+            options: settingsOptions.countries, // This was already correct after my previous suggestion
+          },
+        ],
+      },
+    ],
+  },
 
-
-
-
+  {
+    id: 'AddInfoSetting',
+    title: 'Thêm thông tin',
+    icon: 'ri-information-line',
+    settings: [
+      { id: 'someInfoLabel', label: 'Tên:', type: 'label', class: 'full-width' },
+      {
+        type: 'container',
+        class: 'full-width-container',
+        children: [{ id: 'namebusiness', label: 'Nhập tên', type: 'text' }],
+      },
+      { id: 'someInfoLabel', label: 'Địa chỉ 1:', type: 'label', class: 'full-width' },
+      {
+        type: 'container',
+        class: 'full-width-container',
+        children: [{ id: 'streetbusiness1', label: 'Nhập Địa chỉ 1', type: 'text' }],
+      },
+      { id: 'someInfoLabel', label: 'Địa chỉ 2:', type: 'label', class: 'full-width' },
+      {
+        type: 'container',
+        class: 'full-width-container',
+        children: [{ id: 'streetbusiness2', label: 'Nhập Địa chỉ 2', type: 'text' }],
+      },
+      { id: 'someInfoLabel', label: 'Thành phố:', type: 'label', class: 'full-width' },
+      {
+        type: 'container',
+        class: 'full-width-container',
+        children: [{ id: 'citybusiness', label: 'Nhập Thành phố', type: 'text' }],
+      },
+      { id: 'someInfoLabel', label: 'Quốc gia', type: 'label', class: 'full-width' },
+      {
+        type: 'container',
+        class: 'full-width-container',
+        children: [
+          {
+            id: 'statebusiness',
+            label: 'Chọn quốc gia',
+            type: 'select',
+            searchable: true,
+            options: settingsOptions.countries, // This was already correct after my previous suggestion
+          },
+        ],
+      },
+      { id: 'someInfoLabel', label: 'mã zip:', type: 'label', class: 'full-width' },
+      {
+        type: 'container',
+        class: 'full-width-container',
+        children: [{ id: 'zipbusiness', label: 'Nhập mã zip', type: 'text' }],
+      },
+    ],
+  },
 
   {
     id: 'createSettings',
@@ -212,12 +344,27 @@ const adsPageFeatures = ref([
       { id: 'checkbox1', label: 'Checkbox 1', type: 'checkbox' },
       { id: 'checkbox2', label: 'Checkbox 2', type: 'checkbox' },
       // Thêm 2 selects
-      { id: 'select1', label: 'Select 1', type: 'select', options: [{value: 'opt1', text: 'Lựa chọn 1'}, {value: 'opt2', text: 'Lựa chọn 2'}] },
-      { id: 'select2', label: 'Select 2', type: 'select', options: [{value: 'a', text: 'Mục A'}, {value: 'b', text: 'Mục B'}] },
+      {
+        id: 'select1',
+        label: 'Select 1',
+        type: 'select',
+        options: [
+          { value: 'opt1', text: 'Lựa chọn 1' },
+          { value: 'opt2', text: 'Lựa chọn 2' },
+        ],
+      },
+      {
+        id: 'select2',
+        label: 'Select 2',
+        type: 'select',
+        options: [
+          { value: 'a', text: 'Mục A' },
+          { value: 'b', text: 'Mục B' },
+        ],
+      },
       // Thêm 2 buttons
       { id: 'button1', label: 'Button 1', type: 'button' },
       { id: 'button2', label: 'Button 2', type: 'button' },
-
     ],
   },
 ])
@@ -244,8 +391,6 @@ const columns = ref([
   { key: 'type', label: 'Loại', sortable: true, minWidth: 100 },
   { key: 'bm', label: 'BM', sortable: true, minWidth: 180 },
   { key: 'timezone', label: 'Múi giờ', sortable: true, minWidth: 180 },
-
-
 ])
 
 const adAccounts = ref([])
@@ -330,15 +475,15 @@ const handleUpdateAccountData = (event) => {
       update: [event.detail],
     })
   }
-  const accountId = event.detail.id;
-  const accountIndex = adAccounts.value.findIndex(acc => acc.id === accountId);
+  const accountId = event.detail.id
+  const accountIndex = adAccounts.value.findIndex((acc) => acc.id === accountId)
   if (accountIndex !== -1) {
     // Cập nhật dữ liệu trong mảng ref
-    adAccounts.value[accountIndex] = { ...adAccounts.value[accountIndex], ...event.detail };
+    adAccounts.value[accountIndex] = { ...adAccounts.value[accountIndex], ...event.detail }
     // Ép Vue cập nhật lại computed properties
-    adAccounts.value = [...adAccounts.value];
+    adAccounts.value = [...adAccounts.value]
     // Lưu trạng thái mới nhất của mảng vào localStorage
-    localStorage.setItem(TABLE_DATA_KEY, JSON.stringify(adAccounts.value));
+    localStorage.setItem(TABLE_DATA_KEY, JSON.stringify(adAccounts.value))
   }
 }
 
@@ -358,7 +503,7 @@ const handleAddAccount = (event) => {
     })
   } else {
     // Nếu grid chưa sẵn sàng, chỉ cần thêm vào mảng dữ liệu
-    adAccounts.value.push(...event.detail);
+    adAccounts.value.push(...event.detail)
   }
 }
 
@@ -386,7 +531,6 @@ onUnmounted(() => {
   document.removeEventListener('updateRow', handleUpdateRow)
   document.removeEventListener('addAccount', handleAddAccount)
 })
-
 
 // --- Computed Properties ---
 
@@ -456,6 +600,20 @@ function deleteSelected() {
   }
 }
 
+const handleAutomationButtonClick = async (action) => {
+  if (action === 'getDraft') {
+    try {
+      isLoading.value = true
+      const draftData = await fbscInstance.fbtkqc.TakeDraft()
+      if (draftData) {
+        settingsValues.value.draftInput = draftData
+      }
+    } finally {
+      isLoading.value = false
+    }
+  }
+}
+
 // --- Automation Logic ---
 const { registerTask, sleep } = useAutomationRunner()
 
@@ -469,76 +627,76 @@ function getStatusClass(status) {
 const renameAccount = async (account, newName, delay) => {
   if (account) {
     try {
-      account.automation_status = 'Đang chạy';
+      account.automation_status = 'Đang chạy'
       // Lưu lại trạng thái "Đang chạy"
 
       // Giả lập một tác vụ bất đồng bộ
       await sleep(delay)
       account.name = `${newName} - ${account.id.slice(-4)}`
-      account.automation_status = 'Thành công';
+      account.automation_status = 'Thành công'
       console.log(`Đã đổi tên tài khoản ${account.id} thành công.`)
     } catch (error) {
-      account.automation_status = 'Thất bại';
+      account.automation_status = 'Thất bại'
 
       console.error(`Lỗi khi đổi tên tài khoản ${account.id}:`, error)
     }
-    localStorage.setItem(TABLE_DATA_KEY, JSON.stringify(adAccounts.value));
+    localStorage.setItem(TABLE_DATA_KEY, JSON.stringify(adAccounts.value))
   }
 }
 
 registerTask('AccmanageSettings', async ({ itemId, settings, delay }) => {
   // Chỉ thực hiện đổi tên nếu checkbox 'rename' được chọn
-  if (!settings.rename) return;
+  if (!settings.rename) return
 
   const newName = settings.newName
   // Kiểm tra newName đã được thực hiện ở AutomationPanel,
   // nhưng chúng ta có thể kiểm tra lại ở đây để chắc chắn.
   if (!newName) {
-    console.error('Tên mới là bắt buộc cho tác vụ đổi tên.');
-    const accountToUpdate = adAccounts.value.find((acc) => acc.id === itemId);
-    if (accountToUpdate) accountToUpdate.automation_status = 'Thất bại';
-    return;
+    console.error('Tên mới là bắt buộc cho tác vụ đổi tên.')
+    const accountToUpdate = adAccounts.value.find((acc) => acc.id === itemId)
+    if (accountToUpdate) accountToUpdate.automation_status = 'Thất bại'
+    return
   }
-  const account = adAccounts.value.find((acc) => acc.id === itemId);
-  await renameAccount(account, newName, delay);
+  const account = adAccounts.value.find((acc) => acc.id === itemId)
+  await renameAccount(account, newName, delay)
 })
 
 // 2. Viết hàm xử lý logic chính
 const tagAccount = async (account, tagName, delay) => {
   if (account) {
     try {
-      account.automation_status = 'Đang chạy';
-      await sleep(delay); // Giả lập gọi API
+      account.automation_status = 'Đang chạy'
+      await sleep(delay) // Giả lập gọi API
 
       // Logic thêm thẻ: ở đây ta chỉ thêm vào một trường 'tags' cho đơn giản
-      if (!account.tags) account.tags = [];
+      if (!account.tags) account.tags = []
       if (!account.tags.includes(tagName)) {
-        account.tags.push(tagName);
+        account.tags.push(tagName)
       }
-      account.automation_status = 'Thành công';
-      console.log(`Đã gắn thẻ '${tagName}' cho tài khoản ${account.id}.`);
+      account.automation_status = 'Thành công'
+      console.log(`Đã gắn thẻ '${tagName}' cho tài khoản ${account.id}.`)
     } catch (error) {
-      account.automation_status = 'Thất bại';
-      console.error(`Lỗi khi gắn thẻ cho tài khoản ${account.id}:`, error);
+      account.automation_status = 'Thất bại'
+      console.error(`Lỗi khi gắn thẻ cho tài khoản ${account.id}:`, error)
     }
     // Cập nhật lại localStorage sau khi thay đổi
-    localStorage.setItem(TABLE_DATA_KEY, JSON.stringify(adAccounts.value));
+    localStorage.setItem(TABLE_DATA_KEY, JSON.stringify(adAccounts.value))
   }
-};
+}
 
 // 3. Đăng ký hàm xử lý với ID tương ứng từ bước 1
 registerTask('tagSettings', async ({ itemId, settings, delay }) => {
-  const tagName = settings.tagName;
+  const tagName = settings.tagName
   if (!tagName) {
-    console.error('Tên thẻ là bắt buộc.');
+    console.error('Tên thẻ là bắt buộc.')
     // Cập nhật trạng thái thất bại cho dòng này
-    const account = adAccounts.value.find((acc) => acc.id === itemId);
-    if (account) account.automation_status = 'Thất bại';
-    return;
+    const account = adAccounts.value.find((acc) => acc.id === itemId)
+    if (account) account.automation_status = 'Thất bại'
+    return
   }
-  const account = adAccounts.value.find((acc) => acc.id === itemId);
-  await tagAccount(account, tagName, delay);
-});
+  const account = adAccounts.value.find((acc) => acc.id === itemId)
+  await tagAccount(account, tagName, delay)
+})
 
 // --- Watchers to save settings ---
 watch(
@@ -562,6 +720,24 @@ watch(totalPages, (newTotalPages) => {
   if (currentPage.value > newTotalPages) {
     currentPage.value = Math.max(1, newTotalPages)
   }
+})
+
+onMounted(() => {
+  document.addEventListener('click', (event) => {
+    const button = event.target.closest('.settings-btn')
+    if (button) {
+      const featureCard = button.closest('.feature-card')
+      if (featureCard) {
+        const settingItem = button.closest('.setting-item')
+        const buttonId = settingItem.querySelector('button').id
+        const feature = adsPageFeatures.value.find((f) => f.id === featureCard.querySelector('.card-settings').id)
+        const setting = feature.settings.find((s) => s.id === buttonId) || feature.settings.flatMap(s => s.children || []).find(c => c.id === buttonId);
+        if (setting && setting.action) {
+          handleAutomationButtonClick(setting.action)
+        }
+      }
+    }
+  })
 })
 </script>
 
